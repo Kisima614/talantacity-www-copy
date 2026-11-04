@@ -1,1 +1,230 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10172b">
+<title>Ticket Soko - Event Booking</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f6fa;color:#172033}
+header{background:#10172b;color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.logo{font-size:24px;font-weight:900;color:#f5b942}
+nav a{color:white;text-decoration:none;margin:8px;font-size:14px}
+.hero{background:linear-gradient(120deg,#10172b,#304d7c);color:white;text-align:center;padding:65px 18px}
+.hero h1{font-size:36px;margin-bottom:15px}
+.hero p{line-height:1.8;color:#ddd}
+button{cursor:pointer}
+.hero button{background:#f5b942;border:0;padding:14px 25px;margin-top:22px;border-radius:7px;font-weight:bold}
+.container{max-width:1050px;margin:35px auto;padding:0 17px}
+.heading{text-align:center;margin:30px 0 22px}
+.heading h2{font-size:27px;margin-bottom:9px}
+.heading p{color:#687386}
+.event{background:white;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px #0001}
+.banner{background:linear-gradient(120deg,#811b2e,#10264b);color:white;text-align:center;padding:40px 12px}
+.banner h1{font-size:clamp(28px,6vw,43px);margin:20px 0}
+.banner span{color:#f5b942}
+.banner h2{font-size:23px}
+.details{display:flex;justify-content:space-around;gap:15px;flex-wrap:wrap;padding:22px;text-align:center}
+.details small{color:#687386}
+.tickets{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.ticket{background:white;text-align:center;padding:25px 16px;border-radius:12px;border-top:5px solid #c62828;box-shadow:0 4px 18px #0001}
+.ticket.vip{border-color:#d69b24}
+.ticket.vvip{border-color:#171717}
+.ticket h3{font-size:22px}
+.price{font-size:29px;font-weight:bold;margin:18px 0}
+.ticket p{font-size:14px;color:#687386;line-height:1.8;margin-bottom:18px}
+.ticket button{width:100%;padding:13px;border:0;border-radius:7px;background:#17233d;color:white;font-weight:bold}
+.vip button{background:#a87912}
+.vvip button{background:#111}
+.booking{background:white;padding:25px;border-radius:12px;margin-top:35px;box-shadow:0 4px 18px #0001}
+.booking h2{margin-bottom:10px}
+.booking p{color:#687386;font-size:14px}
+label{display:block;font-weight:bold;font-size:14px;margin:16px 0 7px}
+input,select{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:7px;font-size:15px;background:white}
+.payment{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.payment label{border:1px solid #ddd;padding:13px;border-radius:8px;display:flex;gap:8px;align-items:center}
+.payment input{width:auto}
+.total{background:#eef2f8;padding:18px;margin:20px 0;border-radius:8px;display:flex;justify-content:space-between;font-weight:bold;font-size:19px}
+.submit{width:100%;background:#13884b;color:white;padding:16px;border:0;border-radius:7px;font-size:16px;font-weight:bold}
+#message{margin-top:15px;line-height:1.6}
+footer{background:#10172b;color:white;text-align:center;padding:35px;margin-top:45px}
+footer p{color:#bbb;margin-top:10px}
+@media(max-width:650px){
+.tickets{grid-template-columns:1fr}
+.hero h1{font-size:29px}
+header{justify-content:center}
+.details{display:grid;grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">🎟 TICKET SOKO</div>
+<nav>
+<a href="#home">Home</a>
+<a href="#events">Events</a>
+<a href="#booking">Book</a>
+</nav>
+</header>
+
+<section class="hero" id="home">
+<h1>YOUR EVENT. YOUR EXPERIENCE.</h1>
+<p>Discover events, book tickets and enjoy unforgettable experiences.</p>
+<p>Kenya's online event ticket marketplace.</p>
+<button onclick="document.getElementById('events').scrollIntoView({behavior:'smooth'})">
+EXPLORE EVENTS
+</button>
+</section>
+
+<main class="container">
+
+<section id="events">
+<div class="heading">
+<h2>🔥 FEATURED EVENT</h2>
+<p>Secure your tickets before they sell out.</p>
+</div>
+
+<div class="event">
+<div class="banner">
+<p>⚽ INTERNATIONAL CLUB FRIENDLY</p>
+<h1>BAYERN <span>VS</span> AJAX</h1>
+<h2>TALANTA STADIUM</h2>
+<p>NAIROBI, KENYA</p>
+</div>
+
+<div class="details">
+<div><strong>📍 Venue</strong><br><small>Talanta Stadium</small></div>
+<div><strong>📅 Date</strong><br><small>To be announced</small></div>
+<div><strong>⏰ Kick-off</strong><br><small>To be announced</small></div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="heading">
+<h2>CHOOSE YOUR TICKET</h2>
+<p>Select your preferred ticket category.</p>
+</div>
+
+<div class="tickets">
+
+<div class="ticket">
+<h3>🎫 REGULAR</h3>
+<p>General admission<br>Standard access</p>
+<div class="price">KSh 499</div>
+<button onclick="chooseTicket('Regular')">BOOK REGULAR</button>
+</div>
+
+<div class="ticket vip">
+<h3>👑 VIP</h3>
+<p>VIP admission<br>Premium access</p>
+<div class="price">KSh 1,599</div>
+<button onclick="chooseTicket('VIP')">BOOK VIP</button>
+</div>
+
+<div class="ticket vvip">
+<h3>💎 VVIP</h3>
+<p>Exclusive admission<br>Premium experience</p>
+<div class="price">KSh 2,500</div>
+<button onclick="chooseTicket('VVIP')">BOOK VVIP</button>
+</div>
+
+</div>
+</section>
+
+<section class="booking" id="booking">
+<h2>🎟 BOOK YOUR TICKET</h2>
+<p>Complete your details below.</p>
+
+<form id="bookingForm">
+
+<label>Full Name</label>
+<input id="name" type="text" placeholder="Your full name" required>
+
+<label>Phone Number</label>
+<input id="phone" type="tel" placeholder="07XXXXXXXX" required>
+
+<label>Email Address</label>
+<input id="email" type="email" placeholder="Your email address" required>
+
+<label>Ticket Category</label>
+<select id="category" onchange="updateTotal()">
+<option value="Regular">Regular - KSh 499</option>
+<option value="VIP">VIP - KSh 1,599</option>
+<option value="VVIP">VVIP - KSh 2,500</option>
+</select>
+
+<label>Number of Tickets</label>
+<input id="quantity" type="number" min="1" max="20" value="1" onchange="updateTotal()" oninput="updateTotal()" required>
+
+<label>Payment Method</label>
+<div class="payment">
+<label><input type="radio" name="method" value="M-Pesa" checked> M-Pesa</label>
+<label><input type="radio" name="method" value="Card"> Bank Card</label>
+</div>
+
+<div class="total">
+<span>Total Amount</span>
+<span id="total">KSh 499</span>
+</div>
+
+<button class="submit" type="submit">CONTINUE TO PAYMENT</button>
+
+<p id="message"></p>
+</form>
+</section>
+
+</main>
+
+<footer>
+<div class="logo">🎟 TICKET SOKO</div>
+<p>Discover. Book. Experience.</p>
+<p>© 2026 Ticket Soko. All rights reserved.</p>
+</footer>
+
+<script>
+const prices={
+Regular:499,
+VIP:1599,
+VVIP:2500
+};
+
+function updateTotal(){
+let category=document.getElementById('category').value;
+let quantity=Number(document.getElementById('quantity').value)||1;
+quantity=Math.max(1,Math.min(20,quantity));
+document.getElementById('total').textContent=
+'KSh '+(prices[category]*quantity).toLocaleString();
+}
+
+function chooseTicket(category){
+document.getElementById('category').value=category;
+document.getElementById('quantity').value=1;
+updateTotal();
+document.getElementById('booking').scrollIntoView({behavior:'smooth'});
+}
+
+document.getElementById('bookingForm').addEventListener('submit',function(e){
+e.preventDefault();
+
+let category=document.getElementById('category').value;
+let quantity=Number(document.getElementById('quantity').value);
+let method=document.querySelector('input[name="method"]:checked').value;
+let total=prices[category]*quantity;
+
+document.getElementById('message').textContent=
+'Booking details prepared: '+quantity+' '+category+
+' ticket(s). Total: KSh '+total.toLocaleString()+
+'. Payment method: '+method+
+'. Payment gateway integration is required to complete your purchase.';
+});
+</script>
+
+</body>
+</html>
