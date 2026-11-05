@@ -1,4 +1,3 @@
-
 const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
@@ -60,8 +59,36 @@ app.get("/", (req, res) => {
 // INITIALIZE PAYMENT
 app.post("/api/payments/initialize", async (req, res) => {
   try {
-    const { name, email, phone, quantity } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      quantity
+    } = req.body;
 
+    // DEFAULT PAYMENT METHOD IS M-PESA
+    const requestedMethod = String(
+      req.body.payment_method || "mobile_money"
+    ).toLowerCase();
+
+    let paymentChannel;
+
+    if (
+      ["card", "bank_card"].includes(requestedMethod)
+    ) {
+      paymentChannel = "card";
+    } else if (
+      ["mobile_money", "mpesa", "m-pesa"].includes(requestedMethod)
+    ) {
+      paymentChannel = "mobile_money";
+    } else {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid payment method."
+      });
+    }
+
+    // VALIDATE BOOKING DETAILS
     if (
       !name ||
       !email ||
@@ -76,6 +103,7 @@ app.post("/api/payments/initialize", async (req, res) => {
       });
     }
 
+    // CHECK PAYSTACK SECRET KEY
     if (!process.env.PAYSTACK_SECRET_KEY) {
       return res.status(503).json({
         status: false,
@@ -83,6 +111,7 @@ app.post("/api/payments/initialize", async (req, res) => {
       });
     }
 
+    // CALCULATE TOTAL IN KOBO
     const amount = PRICE * quantity * 100;
 
     const reference =
@@ -92,22 +121,28 @@ app.post("/api/payments/initialize", async (req, res) => {
       process.env.CALLBACK_URL ||
       "https://talanta-sport-city-backend.onrender.com/api/payments/verify";
 
+    // SEND REQUEST TO PAYSTACK
     const response = await axios.post(
       `${PAYSTACK_URL}/transaction/initialize`,
       {
-        email,
-        amount,
+        email: email,
+        amount: amount,
         currency: "KES",
-        reference,
+        reference: reference,
+
         callback_url: callback,
-        channels: ["card", "mobile_money"],
+
+        // M-PESA OR CARD BASED ON CUSTOMER SELECTION
+        channels: [paymentChannel],
+
         metadata: {
           event: EVENT,
           customer_name: name,
-          phone,
-          quantity,
+          phone: phone,
+          quantity: quantity,
           ticket_type: "Regular",
-          unit_price: PRICE
+          unit_price: PRICE,
+          payment_method: paymentChannel
         }
       },
       {
@@ -123,7 +158,7 @@ app.post("/api/payments/initialize", async (req, res) => {
       status: true,
       authorization_url:
         response.data.data.authorization_url,
-      reference
+      reference: reference
     });
 
   } catch (error) {
@@ -202,6 +237,7 @@ app.get("/api/payments/verify", async (req, res) => {
         <meta name="viewport"
           content="width=device-width, initial-scale=1">
         <title>Payment Successful - Talanta Sport City</title>
+
         <style>
           body {
             font-family: Arial;
@@ -210,6 +246,7 @@ app.get("/api/payments/verify", async (req, res) => {
             text-align: center;
             padding: 30px 15px;
           }
+
           .card {
             background: white;
             color: #172033;
@@ -218,13 +255,18 @@ app.get("/api/payments/verify", async (req, res) => {
             max-width: 420px;
             margin: 25px auto;
           }
-          h1 { color: #13884b; }
+
+          h1 {
+            color: #13884b;
+          }
+
           .ref {
             background: #eef2f8;
             padding: 12px;
             border-radius: 7px;
             overflow-wrap: anywhere;
           }
+
           a {
             display: inline-block;
             background: #13884b;
@@ -235,26 +277,51 @@ app.get("/api/payments/verify", async (req, res) => {
           }
         </style>
       </head>
+
       <body>
         <div class="card">
+
           <h1>Payment Successful!</h1>
+
           <h2>TALANTA SPORT CITY</h2>
+
           <p>${escapeHTML(EVENT)}</p>
+
           <p>Talanta Stadium, Nairobi</p>
+
           <hr>
-          <p>Customer: ${escapeHTML(meta.customer_name)}</p>
+
+          <p>
+            Customer:
+            ${escapeHTML(meta.customer_name)}
+          </p>
+
           <p>Ticket type: Regular</p>
+
           <p>Number of tickets: ${quantity}</p>
-          <h2>KSh ${Number(payment.amount / 100).toLocaleString()}</h2>
+
+          <h2>
+            KSh ${Number(payment.amount / 100).toLocaleString()}
+          </h2>
+
           <p>Booking reference:</p>
+
           <div class="ref">
             <strong>${escapeHTML(ticketNumber)}</strong>
           </div>
-          <p>Keep your booking reference for admission enquiries.</p>
-          <p>Admission validation will be handled separately.</p>
+
+          <p>
+            Keep your booking reference for admission enquiries.
+          </p>
+
+          <p>
+            Admission validation will be handled separately.
+          </p>
+
           <a href="${escapeHTML(FRONTEND_URL)}">
             Return to website
           </a>
+
         </div>
       </body>
       </html>
