@@ -1,0 +1,15 @@
+
+{
+  "name": "talanta-sport-city-backend",
+  "version": "1.0.0",
+  "description": "Talanta Sport City Paystack payment backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5"
+  }
+}
