@@ -5,54 +5,79 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#10172b">
-<title>Talanta Sport City | Tickets</title>
+<title>Talanta Sport City | Official Tickets</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f4f6fa;color:#172033}
-header{background:#10172b;color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.logo{font-size:22px;font-weight:900;color:#f5b942}
-nav a{color:white;text-decoration:none;margin:8px;font-size:14px}
-.hero{background:linear-gradient(120deg,#10172b,#304d7c);color:white;text-align:center;padding:65px 18px}
-.hero h1{font-size:36px;margin-bottom:15px}
-.hero p{line-height:1.8;color:#ddd}
-button{cursor:pointer}
-.hero button{background:#f5b942;border:0;padding:14px 25px;margin-top:22px;border-radius:7px;font-weight:bold}
-.container{max-width:1000px;margin:35px auto;padding:0 17px}
-.heading{text-align:center;margin:30px 0 22px}
-.heading h2{font-size:27px;margin-bottom:9px}
-.heading p{color:#687386}
-.event{background:white;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px #0001}
-.banner{background:linear-gradient(120deg,#811b2e,#10264b);color:white;text-align:center;padding:45px 12px}
-.banner h1{font-size:clamp(30px,6vw,48px);margin:20px 0}
+body{font-family:Arial,sans-serif;background:#f2f4f8;color:#172033}
+header{background:#10172b;color:white;padding:17px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.logo{font-size:21px;font-weight:900;color:#f5b942}
+nav a{color:white;text-decoration:none;margin:8px;font-size:13px}
+.hero{background:linear-gradient(120deg,#10172b,#304d7c);color:white;text-align:center;padding:42px 15px}
+.hero h1{font-size:clamp(27px,5vw,42px);margin-bottom:12px}
+.hero p{color:#dce3ef;line-height:1.8}
+.container{max-width:1100px;margin:30px auto;padding:0 15px}
+.heading{text-align:center;margin:28px 0 20px}
+.heading h2{font-size:25px;margin-bottom:8px}
+.heading p{color:#687386;font-size:14px}
+.event{background:white;border-radius:13px;overflow:hidden;box-shadow:0 4px 18px #0001}
+.banner{background:linear-gradient(120deg,#801b2d,#10264b);color:white;text-align:center;padding:35px 12px}
+.banner h1{font-size:clamp(30px,6vw,48px);margin:18px 0}
 .banner span{color:#f5b942}
-.banner h2{font-size:23px}
-.details{display:flex;justify-content:space-around;gap:15px;flex-wrap:wrap;padding:22px;text-align:center}
-.details small{color:#687386}
-.ticket{background:white;text-align:center;padding:30px 20px;border-radius:12px;border-top:5px solid #c62828;box-shadow:0 4px 18px #0001;max-width:500px;margin:auto}
-.ticket h3{font-size:24px}
-.price{font-size:36px;font-weight:bold;margin:18px 0;color:#17233d}
-.ticket p{font-size:14px;color:#687386;line-height:1.8;margin-bottom:18px}
-.ticket button{width:100%;padding:14px;border:0;border-radius:7px;background:#17233d;color:white;font-weight:bold}
-.booking{background:white;padding:25px;border-radius:12px;margin-top:35px;box-shadow:0 4px 18px #0001}
-.booking h2{margin-bottom:10px}
-.booking p{color:#687386;font-size:14px;line-height:1.6}
-label{display:block;font-weight:bold;font-size:14px;margin:16px 0 7px}
-input{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:7px;font-size:15px;background:white}
-.payment{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.payment label{border:1px solid #ddd;padding:13px;border-radius:8px;display:flex;gap:8px;align-items:center}
+.banner h2{font-size:21px}
+.details{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:20px;text-align:center}
+.details strong{font-size:14px}
+.details small{display:block;color:#687386;margin-top:7px}
+.panel{background:white;padding:22px;border-radius:13px;margin-top:25px;box-shadow:0 4px 18px #0001}
+.panel h2{font-size:21px;margin-bottom:8px}
+.muted{color:#687386;font-size:13px;line-height:1.7}
+.levels{display:flex;gap:9px;margin:20px 0;flex-wrap:wrap}
+.level{flex:1;min-width:90px;padding:13px 8px;border:1px solid #d6dce6;background:#f4f6fa;border-radius:8px;font-weight:bold}
+.level.active{background:#17233d;color:white;border-color:#17233d}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:15px 0;font-size:12px;color:#5d6879}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.available{background:#dce8f8}
+.chosen{background:#13884b}
+.sold{background:#d3d5db}
+.stadium{background:#f6f7fa;border:1px solid #e0e4ec;padding:15px;border-radius:12px;overflow:hidden}
+.pitch{max-width:600px;margin:0 auto 20px;background:linear-gradient(120deg,#176c48,#25875b);height:105px;border:3px solid white;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;position:relative}
+.pitch:before{content:"";position:absolute;width:65px;height:65px;border:2px solid #ffffff88;border-radius:50%}
+.pitch span{z-index:1;background:#176c48;padding:5px}
+.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seat-section{background:white;border:1px solid #e0e4ec;border-radius:9px;padding:12px;min-width:0}
+.seat-section h3{text-align:center;font-size:14px;margin-bottom:12px}
+.seats{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px}
+.seat{border:0;border-radius:4px;background:#dce8f8;color:#26364e;font-size:10px;min-width:0;padding:8px 0}
+.seat.selected{background:#13884b;color:white}
+.seat.sold{background:#d3d5db;color:#858b95;cursor:not-allowed}
+.section-info{text-align:center;font-size:11px;color:#7a8493;margin-top:9px}
+.seat-note{font-size:12px;color:#9a6410;background:#fff6e4;padding:12px;border-radius:7px;margin-top:15px;line-height:1.6}
+.summary{background:#eef2f8;padding:17px;border-radius:9px;margin-top:18px}
+.summary-row{display:flex;justify-content:space-between;gap:10px;margin:10px 0;font-size:14px}
+.summary-row.total{font-size:20px;font-weight:bold;border-top:1px solid #ccd4e1;padding-top:14px}
+.ticket{background:white;text-align:center;padding:25px;border-radius:12px;border-top:5px solid #c62828;box-shadow:0 4px 18px #0001}
+.price{font-size:34px;font-weight:bold;margin:15px;color:#17233d}
+.ticket button{width:100%;background:#17233d;color:white;padding:14px;border:0;border-radius:7px;font-weight:bold}
+label{display:block;font-weight:bold;font-size:13px;margin:16px 0 7px}
+input{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:7px;font-size:15px}
+.payment{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.payment label{border:1px solid #ddd;padding:13px;border-radius:8px;display:flex;align-items:center;gap:8px;margin:0}
 .payment input{width:auto}
-.total{background:#eef2f8;padding:18px;margin:20px 0;border-radius:8px;display:flex;justify-content:space-between;font-weight:bold;font-size:19px}
-.submit{width:100%;background:#13884b;color:white;padding:16px;border:0;border-radius:7px;font-size:16px;font-weight:bold}
-.submit:disabled{opacity:.6;cursor:wait}
-#message{margin-top:15px;line-height:1.6}
-footer{background:#10172b;color:white;text-align:center;padding:35px;margin-top:45px}
-footer p{color:#bbb;margin-top:10px}
-@media(max-width:650px){
-.hero h1{font-size:29px}
-header{justify-content:center}
-.details{display:grid;grid-template-columns:1fr 1fr}
-.payment{grid-template-columns:1fr}
+.submit{width:100%;background:#13884b;color:white;padding:16px;border:0;border-radius:8px;font-weight:bold;font-size:16px;margin-top:18px}
+.submit:disabled{opacity:.6}
+#message{margin-top:15px;line-height:1.6;font-size:14px}
+footer{background:#10172b;color:white;text-align:center;padding:30px;margin-top:40px}
+footer p{color:#bbb;margin-top:10px;font-size:13px}
+@media(max-width:600px){
+ header{justify-content:center}
+ nav{text-align:center}
+ .details{grid-template-columns:1fr}
+ .section-grid{gap:7px}
+ .seat-section{padding:7px}
+ .seats{gap:3px}
+ .seat{font-size:9px;padding:7px 0}
+ .panel{padding:15px}
+ .payment{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -64,17 +89,15 @@ header{justify-content:center}
 <nav>
 <a href="#home">Home</a>
 <a href="#events">Events</a>
+<a href="#stadium">Seating</a>
 <a href="#booking">Book Tickets</a>
 </nav>
 </header>
 
 <section class="hero" id="home">
 <h1>YOUR EVENT. YOUR EXPERIENCE.</h1>
-<p>Discover events, book tickets and enjoy unforgettable experiences.</p>
+<p>Discover events, select your seats and enjoy unforgettable experiences.</p>
 <p>Welcome to Talanta Sport City.</p>
-<button onclick="document.getElementById('events').scrollIntoView({behavior:'smooth'})">
-EXPLORE EVENT
-</button>
 </section>
 
 <main class="container">
@@ -82,7 +105,7 @@ EXPLORE EVENT
 <section id="events">
 <div class="heading">
 <h2>🔥 FEATURED EVENT</h2>
-<p>Secure your tickets before they sell out.</p>
+<p>Experience world-class football in Nairobi.</p>
 </div>
 
 <div class="event">
@@ -90,34 +113,116 @@ EXPLORE EVENT
 <p>⚽ INTERNATIONAL CLUB FRIENDLY</p>
 <h1>BAYERN <span>VS</span> AJAX</h1>
 <h2>TALANTA STADIUM</h2>
-<p>NAIROBI, KENYA</p>
+<p>RAILA ODINGA STADIUM · NAIROBI, KENYA</p>
 </div>
 
 <div class="details">
-<div><strong>📍 Venue</strong><br><small>Talanta Stadium</small></div>
-<div><strong>📅 Date</strong><br><small>To Be Announced</small></div>
-<div><strong>⏰ Kick-off</strong><br><small>To Be Announced</small></div>
+<div><strong>📍 VENUE</strong><small>Talanta Stadium</small></div>
+<div><strong>📅 DATE</strong><small>20 December 2026</small></div>
+<div><strong>⏰ KICK-OFF</strong><small>7:30 PM EAT</small></div>
 </div>
 </div>
 </section>
 
-<section>
+<section id="stadium">
+<div class="heading">
+<h2>🏟 SELECT YOUR STADIUM SEATS</h2>
+<p>Choose your preferred stadium level and seating section.</p>
+</div>
+
+<div class="panel">
+<h2>Talanta Stadium Seating Plan</h2>
+<p class="muted">Select a level below to view the seating layout.</p>
+
+<div class="levels">
+<button class="level active" data-level="1">LEVEL 1</button>
+<button class="level" data-level="2">LEVEL 2</button>
+<button class="level" data-level="3">LEVEL 3</button>
+</div>
+
+<div class="legend">
+<span><i class="dot available"></i>Available</span>
+<span><i class="dot chosen"></i>Selected</span>
+<span><i class="dot sold"></i>Unavailable demo seats</span>
+</div>
+
+<div class="stadium">
+<div class="pitch"><span>⚽ PLAYING FIELD</span></div>
+
+<div class="section-grid">
+<div class="seat-section">
+<h3>🔴 NORTH STAND</h3>
+<div class="seats" id="north"></div>
+<div class="section-info">NORTH · BLOCK N</div>
+</div>
+
+<div class="seat-section">
+<h3>🔵 EAST STAND</h3>
+<div class="seats" id="east"></div>
+<div class="section-info">EAST · BLOCK E</div>
+</div>
+
+<div class="seat-section">
+<h3>🟡 SOUTH STAND</h3>
+<div class="seats" id="south"></div>
+<div class="section-info">SOUTH · BLOCK S</div>
+</div>
+
+<div class="seat-section">
+<h3>🟢 WEST STAND</h3>
+<div class="seats" id="west"></div>
+<div class="section-info">WEST · BLOCK W</div>
+</div>
+</div>
+</div>
+
+<div class="seat-note">
+<strong>Important:</strong> This is a preliminary interactive seating layout, not an official Talanta Stadium seat map. Seat availability and reservations are not yet synchronized between customers. Unavailable demo seats are illustrative only.
+</div>
+
+<div class="summary">
+<div class="summary-row">
+<span>Selected level</span>
+<strong id="selectedLevel">Level 1</strong>
+</div>
+<div class="summary-row">
+<span>Selected seats</span>
+<strong id="selectedSeats">None</strong>
+</div>
+<div class="summary-row">
+<span>Number of tickets</span>
+<strong id="selectedQuantity">0</strong>
+</div>
+<div class="summary-row">
+<span>Price per ticket</span>
+<strong>KSh 2,500</strong>
+</div>
+<div class="summary-row total">
+<span>Total</span>
+<strong id="seatTotal">KSh 0</strong>
+</div>
+</div>
+</div>
+</section>
+
+<section style="margin-top:28px">
 <div class="heading">
 <h2>🎫 OFFICIAL TICKET</h2>
-<p>One ticket category. One affordable price.</p>
+<p>Regular admission</p>
 </div>
-
 <div class="ticket">
-<h3>🎫 REGULAR ADMISSION</h3>
-<p>General admission<br>Standard event access</p>
+<h3>REGULAR ADMISSION</h3>
+<p class="muted">Standard event access</p>
 <div class="price">KSh 2,500</div>
-<button onclick="chooseTicket()">BOOK YOUR TICKET</button>
+<button onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">
+CONTINUE TO BOOKING
+</button>
 </div>
 </section>
 
-<section class="booking" id="booking">
-<h2>🎟 BOOK YOUR TICKET</h2>
-<p>Complete your details and proceed to secure payment.</p>
+<section class="panel" id="booking">
+<h2>🎟 COMPLETE YOUR BOOKING</h2>
+<p class="muted">Enter your details and proceed to secure Paystack checkout.</p>
 
 <form id="bookingForm">
 
@@ -148,9 +253,15 @@ Bank Card
 </label>
 </div>
 
-<div class="total">
-<span>Total Amount</span>
-<span id="total">KSh 2,500</span>
+<div class="summary">
+<div class="summary-row">
+<span>Tickets</span>
+<strong id="checkoutQuantity">1</strong>
+</div>
+<div class="summary-row total">
+<span>Amount payable</span>
+<strong id="checkoutTotal">KSh 2,500</strong>
+</div>
 </div>
 
 <button class="submit" id="payButton" type="submit">
@@ -176,103 +287,240 @@ const BACKEND_URL =
 
 const TICKET_PRICE = 2500;
 
-const quantityInput = document.getElementById("quantity");
-const totalDisplay = document.getElementById("total");
-const message = document.getElementById("message");
-const payButton = document.getElementById("payButton");
+let currentLevel = 1;
+let selected = [];
 
-function updateTotal(){
-let quantity = Number(quantityInput.value) || 1;
+const sections = [
+{ id:"north", code:"N" },
+{ id:"east", code:"E" },
+{ id:"south", code:"S" },
+{ id:"west", code:"W" }
+];
 
-quantity = Math.max(1, Math.min(20, quantity));
+const unavailable = {
+1:["N-1-3","E-1-7","S-1-12","W-1-5"],
+2:["N-2-8","E-2-2","S-2-5","W-2-11"],
+3:["N-3-4","E-3-9","S-3-2","W-3-7"]
+};
 
-totalDisplay.textContent =
-"KSh " + (TICKET_PRICE * quantity).toLocaleString();
+function renderSeats(){
+
+sections.forEach(section=>{
+
+const container = document.getElementById(section.id);
+container.innerHTML = "";
+
+for(let row=1;row<=5;row++){
+
+for(let seat=1;seat<=8;seat++){
+
+const id =
+section.code+"-"+currentLevel+"-"+row+"-"+seat;
+
+const button = document.createElement("button");
+button.className = "seat";
+button.textContent = seat;
+button.type = "button";
+button.title = id;
+
+if(unavailable[currentLevel].includes(
+section.code+"-"+currentLevel+"-"+seat
+)){
+// No real sold-seat data is connected yet.
 }
 
-quantityInput.addEventListener("input", updateTotal);
+if(selected.includes(id)){
+button.classList.add("selected");
+}
 
-function chooseTicket(){
-document.getElementById("booking").scrollIntoView({
-behavior:"smooth"
+button.addEventListener("click",()=>{
+
+if(selected.includes(id)){
+selected = selected.filter(x=>x!==id);
+}else{
+
+if(selected.length>=20){
+alert("Maximum booking is 20 tickets.");
+return;
+}
+
+selected.push(id);
+}
+
+renderSeats();
+updateSummary();
+
 });
+
+container.appendChild(button);
+
 }
+
+}
+
+});
+
+}
+
+document.querySelectorAll(".level").forEach(button=>{
+
+button.addEventListener("click",()=>{
+
+currentLevel = Number(button.dataset.level);
+
+document.querySelectorAll(".level").forEach(b=>{
+b.classList.remove("active");
+});
+
+button.classList.add("active");
+
+document.getElementById("selectedLevel").textContent =
+"Level "+currentLevel;
+
+renderSeats();
+updateSummary();
+
+});
+
+});
+
+function updateSummary(){
+
+const quantity = selected.length;
+const total = quantity*TICKET_PRICE;
+
+document.getElementById("selectedSeats").textContent =
+selected.length ? selected.join(", ") : "None";
+
+document.getElementById("selectedQuantity").textContent =
+quantity;
+
+document.getElementById("seatTotal").textContent =
+"KSh "+total.toLocaleString();
+
+document.getElementById("quantity").value =
+quantity || 1;
+
+updateCheckout();
+
+}
+
+function updateCheckout(){
+
+const quantity =
+Number(document.getElementById("quantity").value)||1;
+
+const valid = Math.max(1,Math.min(20,quantity));
+
+document.getElementById("checkoutQuantity").textContent =
+valid;
+
+document.getElementById("checkoutTotal").textContent =
+"KSh "+(valid*TICKET_PRICE).toLocaleString();
+
+}
+
+document.getElementById("quantity").addEventListener("input",()=>{
+selected = [];
+renderSeats();
+updateSummary();
+updateCheckout();
+});
 
 document.getElementById("bookingForm")
-.addEventListener("submit", async function(e){
+.addEventListener("submit",async function(e){
 
 e.preventDefault();
 
-const name = document.getElementById("name").value.trim();
-const phone = document.getElementById("phone").value.trim();
-const email = document.getElementById("email").value.trim();
-const quantity = Number(quantityInput.value);
-const method = document.querySelector(
-'input[name="method"]:checked'
-).value;
+const name =
+document.getElementById("name").value.trim();
 
-if(!name || !phone || !email){
-message.textContent = "Please complete all your details.";
+const phone =
+document.getElementById("phone").value.trim();
+
+const email =
+document.getElementById("email").value.trim();
+
+const quantity =
+Number(document.getElementById("quantity").value);
+
+const method =
+document.querySelector('input[name="method"]:checked').value;
+
+const message = document.getElementById("message");
+const payButton = document.getElementById("payButton");
+
+if(!name||!phone||!email){
+message.textContent="Please complete all your details.";
 return;
 }
 
-if(!Number.isInteger(quantity) || quantity < 1 || quantity > 20){
-message.textContent = "Choose between 1 and 20 tickets.";
+if(!Number.isInteger(quantity)||quantity<1||quantity>20){
+message.textContent="Choose between 1 and 20 tickets.";
 return;
 }
 
-const originalText = payButton.textContent;
+if(selected.length>0 && selected.length!==quantity){
+message.textContent="Your selected seat count must match the ticket quantity.";
+return;
+}
 
-payButton.disabled = true;
-payButton.textContent = "CONNECTING TO PAYSTACK...";
-message.textContent = "Preparing your secure payment...";
+if(selected.length===0){
+message.textContent="Please select your seats on the stadium map first.";
+return;
+}
+
+const originalText=payButton.textContent;
+
+payButton.disabled=true;
+payButton.textContent="CONNECTING TO PAYSTACK...";
+message.textContent="Preparing secure payment...";
 
 try{
 
-const response = await fetch(
-BACKEND_URL + "/api/payments/initialize",
+const response=await fetch(
+BACKEND_URL+"/api/payments/initialize",
 {
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
+headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 name,
 phone,
 email,
 quantity,
-payment_method:method
+payment_method:method,
+selected_seats:selected,
+stadium_level:currentLevel
 })
 }
 );
 
-const result = await response.json();
+const result=await response.json();
 
-if(!response.ok || !result.status ||
-!result.authorization_url){
-throw new Error(
-result.message || "Payment could not be initialized."
-);
+if(!response.ok||!result.status||!result.authorization_url){
+throw new Error(result.message||"Payment could not be initialized.");
 }
 
-message.textContent = "Redirecting to secure Paystack checkout...";
+message.textContent="Redirecting to secure Paystack checkout...";
 
-window.location.href = result.authorization_url;
+window.location.href=result.authorization_url;
 
 }catch(error){
 
-message.textContent =
-error.message +
-" If the service is waking up, wait a moment and try again.";
+message.textContent=
+error.message+" Please wait and try again.";
 
-payButton.disabled = false;
-payButton.textContent = originalText;
+payButton.disabled=false;
+payButton.textContent=originalText;
 
 }
 
 });
 
-updateTotal();
+renderSeats();
+updateSummary();
+updateCheckout();
+
 </script>
 
 </body>
