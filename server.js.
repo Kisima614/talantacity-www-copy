@@ -1,0 +1,271 @@
+
+const express = require("express");
+const axios = require("axios");
+const crypto = require("crypto");
+const cors = require("cors");
+
+const app = express();
+
+const PORT = process.env.PORT || 10000;
+const PRICE = 2500;
+const FRONTEND_URL =
+  process.env.FRONTEND_URL ||
+  "https://kisima614.github.io/ticket-soko/";
+
+app.use(cors());
+
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = Buffer.from(buf);
+  }
+}));
+
+app.get("/", (req, res) => {
+  res.json({
+    service: "Talanta Sport City",
+    status: "running",
+    payment: "Paystack"
+  });
+});
+
+// INITIALIZE PAYMENT
+app.post("/api/payments/initialize", async (req, res) => {
+  try {
+    const { name, email, phone, quantity } = req.body;
+
+    if (!name || !email || !phone ||
+        !Number.isInteger(quantity) ||
+        quantity < 1 || quantity > 20) {
+      return res.status(400).json({
+        status: false,
+        message: "Please provide valid booking details."
+      });
+    }
+
+    if (!process.env.PAYSTACK_SECRET_KEY) {
+      return res.status(500).json({
+        status: false,
+        message: "Payment service is not configured."
+      });
+    }
+
+    const amount = PRICE * quantity * 100;
+    const reference = "TSC-" + crypto.randomUUID();
+
+    const response = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      {
+        email,
+        amount,
+        currency: "KES",
+        reference,
+        callback_url:
+          process.env.CALLBACK_URL ||
+          "https://talanta-sport-city-backend.onrender.com/api/payments/verify",
+        channels: ["card", "mobile_money"],
+        metadata: {
+          event: "Bayern vs Ajax",
+          customer_name: name,
+          phone,
+          quantity,
+          ticket_type: "Regular",
+          unit_price: PRICE
+        }
+      },
+      {
+        headers: {
+          Authorization:
+            "Bearer " + process.env.PAYSTACK_SECRET_KEY,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.data.status) {
+      throw new Error("Paystack could not initialize payment.");
+    }
+
+    res.json({
+      status: true,
+      authorization_url:
+        response.data.data.authorization_url,
+      reference
+    });
+
+  } catch (error) {
+    console.error(
+      "Payment initialization error:",
+      error.response?.data || error.message
+    );
+
+    res.status(500).json({
+      status: false,
+      message: "Unable to start payment. Please try again."
+    });
+  }
+});
+
+// VERIFY PAYMENT
+app.get("/api/payments/verify", async (req, res) => {
+  try {
+    const reference = req.query.reference;
+
+    if (!reference) {
+      return res.status(400).send("Missing payment reference.");
+    }
+
+    const response = await axios.get(
+      "https://api.paystack.co/transaction/verify/" +
+      encodeURIComponent(reference),
+      {
+        headers: {
+          Authorization:
+            "Bearer " + process.env.PAYSTACK_SECRET_KEY
+        }
+      }
+    );
+
+    const payment = response.data.data;
+
+    if (
+      !response.data.status ||
+      payment.status !== "success" ||
+      payment.currency !== "KES"
+    ) {
+      return res.status(400).send(
+        "<h2>Payment not confirmed</h2>" +
+        "<p>Please contact Talanta Sport City.</p>"
+      );
+    }
+
+    const meta = payment.metadata || {};
+    const quantity = Number(meta.quantity);
+    const expectedAmount = PRICE * quantity * 100;
+
+    if (
+      !Number.isInteger(quantity) ||
+      quantity < 1 ||
+      quantity > 20 ||
+      Number(payment.amount) !== expectedAmount ||
+      meta.event !== "Bayern vs Ajax" ||
+      meta.ticket_type !== "Regular"
+    ) {
+      return res.status(400).send(
+        "Payment details could not be validated."
+      );
+    }
+
+    const ticketNumber =
+      "TSC-" + reference.replace(/[^a-zA-Z0-9]/g, "");
+
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Talanta Sport City Booking</title>
+        <style>
+          body{font-family:Arial;background:#10172b;color:white;
+          text-align:center;padding:35px 15px}
+          .card{background:white;color:#172033;border-radius:14px;
+          padding:25px;max-width:420px;margin:30px auto}
+          h1{color:#13884b}
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>Payment Successful!</h1>
+          <h2>Talanta Sport City</h2>
+          <p>Bayern vs Ajax</p>
+          <p>Venue: Talanta Stadium, Nairobi</p>
+          <p>Customer: ${String(meta.customer_name || "")
+            .replace(/[&<>"']/g, "")}</p>
+          <p>Regular tickets: ${quantity}</p>
+          <h2>KSh ${Number(payment.amount / 100)
+            .toLocaleString()}</h2>
+          <p>Payment reference:</p>
+          <strong>${ticketNumber}</strong>
+          <p>Keep this reference for your booking records.</p>
+          <p>Ticket admission must be validated separately.</p>
+          <a href="${FRONTEND_URL}">Return to website</a>
+        </div>
+      </body>
+      </html>
+    `);
+
+  } catch (error) {
+    console.error("Verification error:", error.message);
+    res.status(500).send(
+      "Unable to verify payment. Please contact support."
+    );
+  }
+});
+
+// PAYSTACK WEBHOOK
+app.post("/api/payments/webhook", (req, res) => {
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  const webhookSecret = process.env.PAYSTACK_WEBHOOK_SECRET;
+
+  const oldSignature = req.headers["x-paystack-signature"];
+  const newSignature = req.headers["paystack-signature"];
+
+  let valid = false;
+
+  if (secret && oldSignature && /^[a-f0-9]{128}$/i.test(oldSignature)) {
+    const hash = crypto.createHmac("sha512", secret)
+      .update(req.rawBody)
+      .digest();
+
+    valid = crypto.timingSafeEqual(
+      hash,
+      Buffer.from(oldSignature, "hex")
+    );
+  }
+
+  if (!valid && webhookSecret && newSignature) {
+    const parts = newSignature.split(",");
+    const timePart = parts.find(p => p.startsWith("t="));
+    const timestamp = Number(timePart?.slice(2));
+
+    const signatures = parts
+      .filter(p => p.startsWith("v1="))
+      .map(p => p.slice(3).split(":").pop());
+
+    if (
+      timestamp &&
+      Math.abs(Date.now() / 1000 - timestamp) <= 300
+    ) {
+      const hash = crypto.createHmac("sha512", webhookSecret)
+        .update(`${timestamp}.`)
+        .update(req.rawBody)
+        .digest("hex");
+
+      valid = signatures.some(sig =>
+        /^[a-f0-9]{128}$/i.test(sig) &&
+        crypto.timingSafeEqual(
+          Buffer.from(hash, "hex"),
+          Buffer.from(sig, "hex")
+        )
+      );
+    }
+  }
+
+  if (!valid) {
+    return res.sendStatus(401);
+  }
+
+  if (req.body.event === "charge.success") {
+    console.log(
+      "Paystack successful payment event:",
+      req.body.data.reference
+    );
+  }
+
+  res.sendStatus(200);
+});
+
+app.listen(PORT, () => {
+  console.log(
+    "Talanta Sport City backend running on port " + PORT
+  );
+});
