@@ -5,20 +5,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#10172b">
-<title>Talanta Sport City | Official Tickets</title>
+<title>Talanta Sport City | Tickets</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial,sans-serif;background:#f4f6fa;color:#172033}
 header{background:#10172b;color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.logo{font-size:23px;font-weight:900;color:#f5b942}
+.logo{font-size:22px;font-weight:900;color:#f5b942}
 nav a{color:white;text-decoration:none;margin:8px;font-size:14px}
 .hero{background:linear-gradient(120deg,#10172b,#304d7c);color:white;text-align:center;padding:65px 18px}
 .hero h1{font-size:36px;margin-bottom:15px}
 .hero p{line-height:1.8;color:#ddd}
 button{cursor:pointer}
 .hero button{background:#f5b942;border:0;padding:14px 25px;margin-top:22px;border-radius:7px;font-weight:bold}
-.container{max-width:1050px;margin:35px auto;padding:0 17px}
+.container{max-width:1000px;margin:35px auto;padding:0 17px}
 .heading{text-align:center;margin:30px 0 22px}
 .heading h2{font-size:27px;margin-bottom:9px}
 .heading p{color:#687386}
@@ -36,7 +36,7 @@ button{cursor:pointer}
 .ticket button{width:100%;padding:14px;border:0;border-radius:7px;background:#17233d;color:white;font-weight:bold}
 .booking{background:white;padding:25px;border-radius:12px;margin-top:35px;box-shadow:0 4px 18px #0001}
 .booking h2{margin-bottom:10px}
-.booking p{color:#687386;font-size:14px}
+.booking p{color:#687386;font-size:14px;line-height:1.6}
 label{display:block;font-weight:bold;font-size:14px;margin:16px 0 7px}
 input{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:7px;font-size:15px;background:white}
 .payment{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -44,6 +44,7 @@ input{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:7px;font-si
 .payment input{width:auto}
 .total{background:#eef2f8;padding:18px;margin:20px 0;border-radius:8px;display:flex;justify-content:space-between;font-weight:bold;font-size:19px}
 .submit{width:100%;background:#13884b;color:white;padding:16px;border:0;border-radius:7px;font-size:16px;font-weight:bold}
+.submit:disabled{opacity:.6;cursor:wait}
 #message{margin-top:15px;line-height:1.6}
 footer{background:#10172b;color:white;text-align:center;padding:35px;margin-top:45px}
 footer p{color:#bbb;margin-top:10px}
@@ -116,18 +117,18 @@ EXPLORE EVENT
 
 <section class="booking" id="booking">
 <h2>🎟 BOOK YOUR TICKET</h2>
-<p>Enter your details and proceed to payment.</p>
+<p>Complete your details and proceed to secure payment.</p>
 
 <form id="bookingForm">
 
 <label>Full Name</label>
-<input id="name" type="text" placeholder="Your full name" required>
+<input id="name" type="text" placeholder="Your full name" required maxlength="100">
 
 <label>Phone Number</label>
-<input id="phone" type="tel" placeholder="07XXXXXXXX" required>
+<input id="phone" type="tel" placeholder="07XXXXXXXX" required maxlength="20">
 
 <label>Email Address</label>
-<input id="email" type="email" placeholder="Your email address" required>
+<input id="email" type="email" placeholder="Your email address" required maxlength="150">
 
 <label>Ticket Category</label>
 <input type="text" value="Regular - KSh 2,500" readonly>
@@ -137,8 +138,14 @@ EXPLORE EVENT
 
 <label>Payment Method</label>
 <div class="payment">
-<label><input type="radio" name="method" value="M-Pesa" checked> M-Pesa</label>
-<label><input type="radio" name="method" value="Card"> Bank Card</label>
+<label>
+<input type="radio" name="method" value="mobile_money" checked>
+M-Pesa
+</label>
+<label>
+<input type="radio" name="method" value="card">
+Bank Card
+</label>
 </div>
 
 <div class="total">
@@ -146,9 +153,11 @@ EXPLORE EVENT
 <span id="total">KSh 2,500</span>
 </div>
 
-<button class="submit" type="submit">PROCEED TO PAYMENT</button>
+<button class="submit" id="payButton" type="submit">
+PAY WITH PAYSTACK
+</button>
 
-<p id="message"></p>
+<p id="message" role="status" aria-live="polite"></p>
 
 </form>
 </section>
@@ -162,19 +171,21 @@ EXPLORE EVENT
 </footer>
 
 <script>
-const TICKET_PRICE = 2500;
+const BACKEND_URL =
+"https://talanta-sport-city-backend.onrender.com";
 
-// Add your secure payment checkout endpoint here
-// Do not put secret API keys in this HTML file.
-const PAYMENT_CHECKOUT_URL = "";
+const TICKET_PRICE = 2500;
 
 const quantityInput = document.getElementById("quantity");
 const totalDisplay = document.getElementById("total");
 const message = document.getElementById("message");
+const payButton = document.getElementById("payButton");
 
 function updateTotal(){
 let quantity = Number(quantityInput.value) || 1;
+
 quantity = Math.max(1, Math.min(20, quantity));
+
 totalDisplay.textContent =
 "KSh " + (TICKET_PRICE * quantity).toLocaleString();
 }
@@ -187,17 +198,21 @@ behavior:"smooth"
 });
 }
 
-document.getElementById("bookingForm").addEventListener("submit", function(e){
+document.getElementById("bookingForm")
+.addEventListener("submit", async function(e){
+
 e.preventDefault();
 
 const name = document.getElementById("name").value.trim();
 const phone = document.getElementById("phone").value.trim();
 const email = document.getElementById("email").value.trim();
 const quantity = Number(quantityInput.value);
-const method = document.querySelector('input[name="method"]:checked').value;
+const method = document.querySelector(
+'input[name="method"]:checked'
+).value;
 
 if(!name || !phone || !email){
-message.textContent = "Please complete all required details.";
+message.textContent = "Please complete all your details.";
 return;
 }
 
@@ -206,41 +221,55 @@ message.textContent = "Choose between 1 and 20 tickets.";
 return;
 }
 
-const total = TICKET_PRICE * quantity;
+const originalText = payButton.textContent;
 
-const booking = {
-name:name,
-phone:phone,
-email:email,
-category:"Regular",
-quantity:quantity,
-amount:total,
-currency:"KES",
-paymentMethod:method
-};
+payButton.disabled = true;
+payButton.textContent = "CONNECTING TO PAYSTACK...";
+message.textContent = "Preparing your secure payment...";
 
-if(!PAYMENT_CHECKOUT_URL){
-message.textContent =
-"Your booking details are ready. Total: KSh " +
-total.toLocaleString() +
-". Secure payment is not yet connected. Please check back soon.";
-return;
+try{
+
+const response = await fetch(
+BACKEND_URL + "/api/payments/initialize",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+name,
+phone,
+email,
+quantity,
+payment_method:method
+})
+}
+);
+
+const result = await response.json();
+
+if(!response.ok || !result.status ||
+!result.authorization_url){
+throw new Error(
+result.message || "Payment could not be initialized."
+);
 }
 
-const checkoutForm = document.createElement("form");
-checkoutForm.method = "POST";
-checkoutForm.action = PAYMENT_CHECKOUT_URL;
+message.textContent = "Redirecting to secure Paystack checkout...";
 
-Object.entries(booking).forEach(([key,value])=>{
-const input = document.createElement("input");
-input.type = "hidden";
-input.name = key;
-input.value = value;
-checkoutForm.appendChild(input);
-});
+window.location.href = result.authorization_url;
 
-document.body.appendChild(checkoutForm);
-checkoutForm.submit();
+}catch(error){
+
+message.textContent =
+error.message +
+" If the service is waking up, wait a moment and try again.";
+
+payButton.disabled = false;
+payButton.textContent = originalText;
+
+}
+
 });
 
 updateTotal();
