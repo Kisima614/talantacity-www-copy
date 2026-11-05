@@ -1,3 +1,4 @@
+
 const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
@@ -6,7 +7,6 @@ const cors = require("cors");
 const app = express();
 
 const PORT = process.env.PORT || 10000;
-const PRICE = 2500;
 const EVENT = "Bayern vs Ajax";
 
 const FRONTEND_URL =
@@ -14,6 +14,12 @@ const FRONTEND_URL =
   "https://kisima614.github.io/ticket-soko/";
 
 const PAYSTACK_URL = "https://api.paystack.co";
+
+const TICKET_PRICES = {
+  Regular: 2500,
+  VIP: 5000,
+  VVIP: 15000
+};
 
 app.use(cors({
   origin: [
@@ -40,18 +46,19 @@ function escapeHTML(value) {
 
 function paymentHeaders() {
   return {
-    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+    Authorization:
+      `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
     "Content-Type": "application/json"
   };
 }
 
-// HOME / HEALTH CHECK
+// HOME
 app.get("/", (req, res) => {
   res.json({
     service: "Talanta Sport City",
     status: "running",
     event: EVENT,
-    ticketPrice: PRICE,
+    prices: TICKET_PRICES,
     currency: "KES"
   });
 });
@@ -63,47 +70,17 @@ app.post("/api/payments/initialize", async (req, res) => {
       name,
       email,
       phone,
-      quantity
+      quantity,
+      ticket_type,
+      section,
+      selected_seats,
+      stadium_level
     } = req.body;
 
-    // DEFAULT PAYMENT METHOD IS M-PESA
-    const requestedMethod = String(
+    const method = String(
       req.body.payment_method || "mobile_money"
     ).toLowerCase();
 
-    let paymentChannel;
-
-    if (
-      ["card", "bank_card"].includes(requestedMethod)
-    ) {
-      paymentChannel = "card";
-    } else if (
-      ["mobile_money", "mpesa", "m-pesa"].includes(requestedMethod)
-    ) {
-      paymentChannel = "mobile_money";
-    } else {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid payment method."
-      });
-    }
-
-    // VALIDATE BOOKING DETAILS
-    if (
-      !name ||
-      !email ||
-      !phone ||
-      !Number.isInteger(quantity) ||
-      quantity < 1 ||
-      quantity > 20
-    ) {
-      return res.status(400).json({
-        status: false,
-        message: "Please enter valid booking details."
-      });
-    }
-
-    // CHECK PAYSTACK SECRET KEY
     if (!process.env.PAYSTACK_SECRET_KEY) {
       return res.status(503).json({
         status: false,
@@ -111,38 +88,123 @@ app.post("/api/payments/initialize", async (req, res) => {
       });
     }
 
-    // CALCULATE TOTAL IN KOBO
-    const amount = PRICE * quantity * 100;
+    if (
+      typeof name !== "string" ||
+      !name.trim() ||
+      name.length > 100 ||
+      typeof email !== "string" ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      typeof phone !== "string" ||
+      !phone.trim() ||
+      phone.length > 20
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Please enter valid customer details."
+      });
+    }
 
-    const reference =
-      "TSC-" + crypto.randomUUID();
+    if (
+      !Number.isInteger(quantity) ||
+      quantity < 1 ||
+      quantity > 20
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Choose between 1 and 20 tickets."
+      });
+    }
+
+    const ticketType = String(ticket_type || "");
+
+    if (!Object.prototype.hasOwnProperty.call(
+      TICKET_PRICES,
+      ticketType
+    )) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid ticket category."
+      });
+    }
+
+    const unitPrice = TICKET_PRICES[ticketType];
+    const amount = unitPrice * quantity * 100;
+
+    if (
+      !Array.isArray(selected_seats) ||
+      selected_seats.length !== quantity ||
+      selected_seats.some(
+        seat => !Number.isInteger(seat) ||
+        seat < 1 || seat > 60
+      )
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Please select the correct number of seats."
+      });
+    }
+
+    if (
+      !Number.isInteger(Number(section)) ||
+      Number(section) < 1
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Please select a seating section."
+      });
+    }
+
+    if (
+      ![1, 2, 3].includes(Number(stadium_level))
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid stadium level."
+      });
+    }
+
+    let channel;
+
+    if (["card", "bank_card"].includes(method)) {
+      channel = "card";
+    } else if (
+      ["mobile_money", "mpesa", "m-pesa"].includes(method)
+    ) {
+      channel = "mobile_money";
+    } else {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid payment method."
+      });
+    }
+
+    const reference = "TSC-" + crypto.randomUUID();
 
     const callback =
       process.env.CALLBACK_URL ||
       "https://talanta-sport-city-backend.onrender.com/api/payments/verify";
 
-    // SEND REQUEST TO PAYSTACK
     const response = await axios.post(
       `${PAYSTACK_URL}/transaction/initialize`,
       {
-        email: email,
-        amount: amount,
+        email: email.trim(),
+        amount,
         currency: "KES",
-        reference: reference,
-
+        reference,
         callback_url: callback,
-
-        // M-PESA OR CARD BASED ON CUSTOMER SELECTION
-        channels: [paymentChannel],
+        channels: [channel],
 
         metadata: {
           event: EVENT,
-          customer_name: name,
-          phone: phone,
-          quantity: quantity,
-          ticket_type: "Regular",
-          unit_price: PRICE,
-          payment_method: paymentChannel
+          customer_name: name.trim(),
+          phone: phone.trim(),
+          quantity,
+          ticket_type: ticketType,
+          unit_price: unitPrice,
+          section: Number(section),
+          stadium_level: Number(stadium_level),
+          selected_seats,
+          payment_method: channel
         }
       },
       {
@@ -150,20 +212,25 @@ app.post("/api/payments/initialize", async (req, res) => {
       }
     );
 
-    if (!response.data.status) {
-      throw new Error("Payment initialization failed.");
+    if (
+      !response.data.status ||
+      !response.data.data.authorization_url
+    ) {
+      throw new Error("Paystack initialization failed.");
     }
 
     res.json({
       status: true,
       authorization_url:
         response.data.data.authorization_url,
-      reference: reference
+      reference,
+      amount: unitPrice * quantity,
+      currency: "KES"
     });
 
   } catch (error) {
     console.error(
-      "Initialization error:",
+      "Payment initialization error:",
       error.response?.data || error.message
     );
 
@@ -183,15 +250,7 @@ app.get("/api/payments/verify", async (req, res) => {
       !reference ||
       !/^TSC-[a-f0-9-]{36}$/i.test(reference)
     ) {
-      return res.status(400).send(
-        "Invalid booking reference."
-      );
-    }
-
-    if (!process.env.PAYSTACK_SECRET_KEY) {
-      return res.status(503).send(
-        "Payment verification is unavailable."
-      );
+      return res.status(400).send("Invalid booking reference.");
     }
 
     const response = await axios.get(
@@ -205,7 +264,19 @@ app.get("/api/payments/verify", async (req, res) => {
     const meta = payment.metadata || {};
 
     const quantity = Number(meta.quantity);
-    const expectedAmount = PRICE * quantity * 100;
+    const ticketType = String(meta.ticket_type || "");
+    const unitPrice = TICKET_PRICES[ticketType];
+
+    if (
+      !unitPrice ||
+      !Number.isInteger(quantity) ||
+      quantity < 1 ||
+      quantity > 20
+    ) {
+      return res.status(400).send("Invalid ticket information.");
+    }
+
+    const expectedAmount = unitPrice * quantity * 100;
 
     const valid =
       response.data.status === true &&
@@ -213,11 +284,10 @@ app.get("/api/payments/verify", async (req, res) => {
       payment.reference === reference &&
       payment.currency === "KES" &&
       Number(payment.amount) === expectedAmount &&
-      Number.isInteger(quantity) &&
-      quantity >= 1 &&
-      quantity <= 20 &&
       meta.event === EVENT &&
-      meta.ticket_type === "Regular";
+      Number(meta.unit_price) === unitPrice &&
+      Array.isArray(meta.selected_seats) &&
+      meta.selected_seats.length === quantity;
 
     if (!valid) {
       return res.status(400).send(`
@@ -228,100 +298,72 @@ app.get("/api/payments/verify", async (req, res) => {
     }
 
     const ticketNumber =
-      "TSC-" + String(reference).replace(/[^a-zA-Z0-9]/g, "");
+      "TSC-" + crypto.randomUUID().slice(0, 12).toUpperCase();
+
+    const total = unitPrice * quantity;
+
+    const seats = meta.selected_seats
+      .map(escapeHTML)
+      .join(", ");
 
     res.send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
-        <meta name="viewport"
-          content="width=device-width, initial-scale=1">
-        <title>Payment Successful - Talanta Sport City</title>
-
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Payment Successful | Talanta Sport City</title>
         <style>
           body {
             font-family: Arial;
             background: #10172b;
             color: white;
             text-align: center;
-            padding: 30px 15px;
+            padding: 25px 12px;
           }
-
           .card {
             background: white;
             color: #172033;
-            border-radius: 15px;
+            max-width: 430px;
+            margin: 20px auto;
             padding: 25px;
-            max-width: 420px;
-            margin: 25px auto;
+            border-radius: 13px;
           }
-
-          h1 {
-            color: #13884b;
-          }
-
+          h1 {color:#13884b}
           .ref {
-            background: #eef2f8;
-            padding: 12px;
-            border-radius: 7px;
-            overflow-wrap: anywhere;
+            background:#eef2f8;
+            padding:13px;
+            overflow-wrap:anywhere;
           }
-
           a {
-            display: inline-block;
-            background: #13884b;
-            color: white;
-            padding: 13px 20px;
-            text-decoration: none;
-            border-radius: 7px;
+            display:inline-block;
+            background:#13884b;
+            color:white;
+            padding:13px 22px;
+            text-decoration:none;
+            border-radius:6px;
+            margin-top:15px;
           }
         </style>
       </head>
-
       <body>
         <div class="card">
-
-          <h1>Payment Successful!</h1>
-
+          <h1>✓ Payment Successful!</h1>
           <h2>TALANTA SPORT CITY</h2>
-
-          <p>${escapeHTML(EVENT)}</p>
-
+          <h3>${escapeHTML(EVENT)}</h3>
           <p>Talanta Stadium, Nairobi</p>
-
           <hr>
-
-          <p>
-            Customer:
-            ${escapeHTML(meta.customer_name)}
-          </p>
-
-          <p>Ticket type: Regular</p>
-
-          <p>Number of tickets: ${quantity}</p>
-
-          <h2>
-            KSh ${Number(payment.amount / 100).toLocaleString()}
-          </h2>
-
+          <p>Customer: ${escapeHTML(meta.customer_name)}</p>
+          <p>Ticket category: ${escapeHTML(ticketType)}</p>
+          <p>Tickets: ${quantity}</p>
+          <p>Level: ${escapeHTML(meta.stadium_level)}</p>
+          <p>Section: ${escapeHTML(meta.section)}</p>
+          <p>Seats: ${seats}</p>
+          <h2>${escapeHTML(total.toLocaleString("en-KE"))} KSh</h2>
           <p>Booking reference:</p>
-
-          <div class="ref">
-            <strong>${escapeHTML(ticketNumber)}</strong>
-          </div>
-
-          <p>
-            Keep your booking reference for admission enquiries.
-          </p>
-
-          <p>
-            Admission validation will be handled separately.
-          </p>
-
-          <a href="${escapeHTML(FRONTEND_URL)}">
-            Return to website
-          </a>
-
+          <div class="ref"><strong>${escapeHTML(ticketNumber)}</strong></div>
+          <p>Payment reference: ${escapeHTML(reference)}</p>
+          <p>Keep this reference for booking enquiries.</p>
+          <a href="${escapeHTML(FRONTEND_URL)}">Return to website</a>
         </div>
       </body>
       </html>
@@ -348,7 +390,7 @@ app.post("/api/payments/webhook", (req, res) => {
     return res.sendStatus(401);
   }
 
-  const expectedSignature = crypto
+  const expected = crypto
     .createHmac("sha512", secret)
     .update(req.rawBody)
     .digest();
@@ -357,21 +399,18 @@ app.post("/api/payments/webhook", (req, res) => {
     return res.sendStatus(401);
   }
 
-  const receivedSignature =
-    Buffer.from(signature, "hex");
+  const received = Buffer.from(signature, "hex");
 
   if (
-    !crypto.timingSafeEqual(
-      expectedSignature,
-      receivedSignature
-    )
+    received.length !== expected.length ||
+    !crypto.timingSafeEqual(expected, received)
   ) {
     return res.sendStatus(401);
   }
 
   if (req.body.event === "charge.success") {
     console.log(
-      "Successful payment notification:",
+      "Successful Paystack payment:",
       req.body.data.reference
     );
   }
@@ -382,6 +421,6 @@ app.post("/api/payments/webhook", (req, res) => {
 // START SERVER
 app.listen(PORT, () => {
   console.log(
-    `Talanta Sport City backend running on port ${PORT}`
+    `Talanta Sport City running on port ${PORT}`
   );
 });
