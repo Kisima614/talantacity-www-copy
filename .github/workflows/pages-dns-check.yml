@@ -1,0 +1,35 @@
+name: Check Talanta City DNS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dns-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check GitHub Pages DNS health
+        env:
+          GH_TOKEN: ${{ secrets.PAGES_DNS_TOKEN }}
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            STATUS=$(curl -sS \
+              -o report.json \
+              -w "%{http_code}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/Kisima614/ticket-soko/pages/health)
+
+            echo "GitHub API status: $STATUS"
+            cat report.json
+
+            if [ "$STATUS" = "200" ]; then
+              break
+            fi
+
+            if [ "$STATUS" != "202" ]; then
+              exit 1
+            fi
+
+            sleep 15
+          done
