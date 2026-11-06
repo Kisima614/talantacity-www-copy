@@ -9,17 +9,24 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 10000;
 const EVENT = "Bayern vs Ajax";
-const FRONTEND_URL = "https://talantacity.com/";
+const FRONTEND_URL = "https://www.talantacity.com/";
 const PAYSTACK_URL = "https://api.paystack.co";
 const RESERVATION_MINUTES = 15;
+const MAX_QUANTITY = 20;
+const SEATS_PER_SECTION = 60;
 
 const TICKET_TYPES = {
-  Regular: { price: 2500, capacity: 50000, prefix: "REG" },
-  VIP: { price: 5000, capacity: 15000, prefix: "VIP" },
-  VVIP: { price: 15000, capacity: 5000, prefix: "VVIP" }
+  Regular: { price: 2500, capacity: 50000 },
+  VIP: { price: 5000, capacity: 15000 },
+  VVIP: { price: 15000, capacity: 5000 }
 };
 
-// FIREBASE
+const LEVEL_SECTIONS = {
+  1: { first: 101, last: 128 },
+  2: { first: 201, last: 220 },
+  3: { first: 401, last: 435 }
+};
+
 const SERVICE_ACCOUNT_PATH =
   process.env.GOOGLE_APPLICATION_CREDENTIALS ||
   "/etc/secrets/serviceAccountKey.json";
@@ -39,7 +46,6 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const Timestamp = admin.firestore.Timestamp;
 
-// CORS
 app.use(cors({
   origin: [
     "https://talantacity.com",
@@ -91,22 +97,45 @@ function ticketNumber() {
     crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
 }
 
-// RELEASE EXPIRED RESERVATIONS
-async function releaseExpiredReservations() {
-  const now = Timestamp.now();
+function validateSeats(level, section, seats, quantity) {
+  const levelInfo = LEVEL_SECTIONS[level];
 
-  const expired = await db.collection("bookings")
-    .where("status", "==", "pending")
-    .where("expiresAt", "<=", now)
-    .limit(50)
-    .get();
-
-  for (const doc of expired.docs) {
-    await releaseBooking(doc.id);
+  if (!levelInfo) {
+    throw new Error("Please select a valid stadium level.");
   }
+
+  if (
+    !Number.isInteger(section) ||
+    section < levelInfo.first ||
+    section > levelInfo.last
+  ) {
+    throw new Error("The selected section does not belong to this level.");
+  }
+
+  if (
+    !Array.isArray(seats) ||
+    seats.length !== quantity ||
+    seats.some(seat =>
+      !Number.isInteger(seat) ||
+      seat < 1 ||
+      seat > SEATS_PER_SECTION
+    ) ||
+    new Set(seats).size !== seats.length
+  ) {
+    throw new Error("Select the exact number of valid, different seats.");
+  }
+
+  return seats.map(seat => ({
+    number: seat,
+    id: `L${level}-S${section}-N${String(seat).padStart(2, "0")}`
+  }));
 }
 
-// RELEASE ONE PENDING BOOKING
+function seatDocument(seatId) {
+  return db.collection("stadiumSeats").doc(seatId);
+}
+
+// RELEASE ONE EXPIRED BOOKING
 async function releaseBooking(reference) {
   const bookingRef = db.collection("bookings").doc(reference);
 
@@ -123,35 +152,57 @@ async function releaseBooking(reference) {
       .doc(booking.ticketType);
 
     const counterSnap = await tx.get(counterRef);
-    const counter = counterSnap.exists
-      ? counterSnap.data()
-      : { sold: 0, held: 0, nextSeat: 1 };
+    const counter = counterSnap.exists ? counterSnap.data() : {};
 
-    const seats = booking.seats || [];
+    const seatRefs = (booking.seats || []).map(seat =>
+      seatDocument(seat.id)
+    );
+
+    const seatSnaps = [];
+
+    for (const ref of seatRefs) {
+      seatSnaps.push(await tx.get(ref));
+    }
 
     tx.set(counterRef, {
       sold: counter.sold || 0,
-      held: Math.max(0, (counter.held || 0) - booking.quantity),
-      nextSeat: counter.nextSeat || 1
+      held: Math.max(0, (counter.held || 0) - booking.quantity)
     });
 
-    for (const seat of seats) {
-      const freeRef = db.collection("freeSeats").doc(seat);
-      tx.set(freeRef, {
-        seat,
-        ticketType: booking.ticketType,
-        releasedAt: Timestamp.now()
-      });
-    }
+    seatSnaps.forEach((snap, index) => {
+      if (
+        snap.exists &&
+        snap.data().reference === reference &&
+        snap.data().status === "pending"
+      ) {
+        tx.delete(seatRefs[index]);
+      }
+    });
 
     tx.update(bookingRef, {
       status: "expired",
+      paymentStatus: "expired",
       expiredAt: Timestamp.now()
     });
   });
 }
 
-// ALLOCATE UNIQUE SEATS AND CREATE RESERVATION
+// RELEASE EXPIRED RESERVATIONS
+async function releaseExpiredReservations() {
+  const now = Timestamp.now();
+
+  const expired = await db.collection("bookings")
+    .where("status", "==", "pending")
+    .where("expiresAt", "<=", now)
+    .limit(50)
+    .get();
+
+  for (const doc of expired.docs) {
+    await releaseBooking(doc.id);
+  }
+}
+
+// CREATE EXACT SEAT RESERVATION
 async function createReservation(details) {
   const {
     reference,
@@ -159,56 +210,61 @@ async function createReservation(details) {
     email,
     phone,
     quantity,
-    ticketType
+    ticketType,
+    level,
+    section,
+    seats,
+    paymentMethod
   } = details;
 
   const type = TICKET_TYPES[ticketType];
+
   const bookingRef = db.collection("bookings").doc(reference);
   const counterRef = db.collection("inventory").doc(ticketType);
 
   return db.runTransaction(async tx => {
-    const existingBooking = await tx.get(bookingRef);
+    const bookingSnap = await tx.get(bookingRef);
 
-    if (existingBooking.exists) {
+    if (bookingSnap.exists) {
       throw new Error("Booking reference already exists.");
     }
 
     const counterSnap = await tx.get(counterRef);
+    const counter = counterSnap.exists ? counterSnap.data() : {
+      sold: 0,
+      held: 0
+    };
 
-    const counter = counterSnap.exists
-      ? counterSnap.data()
-      : { sold: 0, held: 0, nextSeat: 1 };
-
-    const sold = counter.sold || 0;
-    const held = counter.held || 0;
-    let nextSeat = counter.nextSeat || 1;
-
-    if (sold + held + quantity > type.capacity) {
-      throw new Error("Sorry, this ticket category is sold out or has insufficient availability.");
+    if (
+      (counter.sold || 0) +
+      (counter.held || 0) +
+      quantity > type.capacity
+    ) {
+      throw new Error("This ticket category has insufficient availability.");
     }
 
-    const freeQuery = db.collection("freeSeats")
-      .where("ticketType", "==", ticketType)
-      .limit(quantity);
+    const seatRefs = seats.map(seat => seatDocument(seat.id));
+    const seatSnaps = [];
 
-    const freeSnap = await tx.get(freeQuery);
-
-    const seats = freeSnap.docs.map(doc => doc.id);
-
-    for (const doc of freeSnap.docs) {
-      tx.delete(doc.ref);
+    for (const ref of seatRefs) {
+      seatSnaps.push(await tx.get(ref));
     }
 
-    while (seats.length < quantity) {
-      if (nextSeat > type.capacity) {
-        throw new Error("No additional seat numbers are available.");
+    for (const snap of seatSnaps) {
+      if (snap.exists) {
+        const existing = snap.data();
+
+        if (
+          existing.status === "paid" ||
+          (
+            existing.status === "pending" &&
+            existing.expiresAt &&
+            existing.expiresAt.toMillis() > Date.now()
+          )
+        ) {
+          throw new Error("One or more selected seats are already taken. Please choose different seats.");
+        }
       }
-
-      const seat = type.prefix + "-" +
-        String(nextSeat).padStart(5, "0");
-
-      seats.push(seat);
-      nextSeat++;
     }
 
     const expiresAt = Timestamp.fromDate(
@@ -216,9 +272,22 @@ async function createReservation(details) {
     );
 
     tx.set(counterRef, {
-      sold,
-      held: held + quantity,
-      nextSeat
+      sold: counter.sold || 0,
+      held: (counter.held || 0) + quantity
+    });
+
+    seats.forEach((seat, index) => {
+      tx.set(seatRefs[index], {
+        seatId: seat.id,
+        level,
+        section,
+        seatNumber: seat.number,
+        ticketType,
+        reference,
+        status: "pending",
+        expiresAt,
+        createdAt: Timestamp.now()
+      });
     });
 
     tx.create(bookingRef, {
@@ -232,10 +301,12 @@ async function createReservation(details) {
       quantity,
       amount: type.price * quantity,
       currency: "KES",
+      level,
+      section,
       seats,
       status: "pending",
       paymentStatus: "pending",
-      paymentMethod: details.paymentMethod,
+      paymentMethod,
       createdAt: Timestamp.now(),
       expiresAt
     });
@@ -244,7 +315,7 @@ async function createReservation(details) {
   });
 }
 
-// VERIFY WITH PAYSTACK AND CONFIRM BOOKING
+// VERIFY PAYMENT AND CONFIRM EXACT SEATS
 async function confirmPayment(reference) {
   const response = await axios.get(
     `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(reference)}`,
@@ -271,7 +342,7 @@ async function confirmPayment(reference) {
     meta.event === EVENT &&
     Number.isInteger(quantity) &&
     quantity >= 1 &&
-    quantity <= 20;
+    quantity <= MAX_QUANTITY;
 
   if (!valid) {
     throw new Error("Paystack payment verification failed.");
@@ -298,19 +369,48 @@ async function confirmPayment(reference) {
       booking.quantity !== quantity ||
       booking.amount * 100 !== Number(payment.amount)
     ) {
-      throw new Error("Booking cannot be confirmed.");
+      throw new Error("Booking cannot be confirmed. Contact support before paying again.");
     }
 
     const counterRef = db.collection("inventory")
       .doc(booking.ticketType);
 
     const counterSnap = await tx.get(counterRef);
-    const counter = counterSnap.data() || {};
+    const counter = counterSnap.exists ? counterSnap.data() : {};
+
+    const seatRefs = (booking.seats || []).map(seat =>
+      seatDocument(seat.id)
+    );
+
+    const seatSnaps = [];
+
+    for (const ref of seatRefs) {
+      seatSnaps.push(await tx.get(ref));
+    }
+
+    for (const snap of seatSnaps) {
+      if (
+        !snap.exists ||
+        snap.data().reference !== reference ||
+        snap.data().status !== "pending"
+      ) {
+        throw new Error("One or more seat reservations are no longer valid. Contact support.");
+      }
+    }
+
+    const now = Timestamp.now();
 
     tx.set(counterRef, {
       sold: (counter.sold || 0) + quantity,
-      held: Math.max(0, (counter.held || 0) - quantity),
-      nextSeat: counter.nextSeat || 1
+      held: Math.max(0, (counter.held || 0) - quantity)
+    });
+
+    seatSnaps.forEach((snap, index) => {
+      tx.update(seatRefs[index], {
+        status: "paid",
+        paidAt: now,
+        paymentReference: reference
+      });
     });
 
     const confirmed = {
@@ -319,7 +419,7 @@ async function confirmPayment(reference) {
       paymentStatus: "success",
       ticketNumber: ticketNumber(),
       paymentReference: reference,
-      paidAt: Timestamp.now()
+      paidAt: now
     };
 
     tx.set(bookingRef, confirmed);
@@ -336,11 +436,75 @@ app.get("/", (req, res) => {
     event: EVENT,
     capacity: 70000,
     categories: TICKET_TYPES,
-    currency: "KES"
+    currency: "KES",
+    manualSeatSelection: true,
+    seatsPerSection: SEATS_PER_SECTION
   });
 });
 
-// CHECK AVAILABLE CAPACITY
+// GET SECTION SEAT AVAILABILITY
+app.get("/api/seats/:level/:section", async (req, res) => {
+  try {
+    const level = Number(req.params.level);
+    const section = Number(req.params.section);
+    const levelInfo = LEVEL_SECTIONS[level];
+
+    if (
+      !levelInfo ||
+      !Number.isInteger(section) ||
+      section < levelInfo.first ||
+      section > levelInfo.last
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid level or section."
+      });
+    }
+
+    await releaseExpiredReservations();
+
+    const result = [];
+
+    for (let number = 1; number <= SEATS_PER_SECTION; number++) {
+      const id = `L${level}-S${section}-N${String(number).padStart(2, "0")}`;
+      const snap = await seatDocument(id).get();
+
+      let status = "available";
+
+      if (snap.exists) {
+        const data = snap.data();
+
+        if (data.status === "paid") {
+          status = "sold";
+        } else if (
+          data.status === "pending" &&
+          data.expiresAt &&
+          data.expiresAt.toMillis() > Date.now()
+        ) {
+          status = "reserved";
+        }
+      }
+
+      result.push({ number, id, status });
+    }
+
+    res.json({
+      status: true,
+      level,
+      section,
+      seats: result
+    });
+
+  } catch (error) {
+    console.error("Seat availability error:", error.message);
+    res.status(500).json({
+      status: false,
+      message: "Unable to retrieve seat availability."
+    });
+  }
+});
+
+// TICKET CATEGORY AVAILABILITY
 app.get("/api/tickets/availability", async (req, res) => {
   try {
     await releaseExpiredReservations();
@@ -367,6 +531,7 @@ app.get("/api/tickets/availability", async (req, res) => {
     }
 
     res.json({ status: true, availability: result });
+
   } catch (error) {
     console.error("Availability error:", error.message);
     res.status(500).json({
@@ -387,7 +552,10 @@ app.post("/api/payments/initialize", async (req, res) => {
       phone,
       quantity,
       ticket_type,
-      payment_method
+      payment_method,
+      stadium_level,
+      section,
+      selected_seats
     } = req.body;
 
     const ticketType = String(ticket_type || "");
@@ -420,13 +588,23 @@ app.post("/api/payments/initialize", async (req, res) => {
     if (
       !Number.isInteger(quantity) ||
       quantity < 1 ||
-      quantity > 20
+      quantity > MAX_QUANTITY
     ) {
       return res.status(400).json({
         status: false,
-        message: "Choose between 1 and 20 tickets."
+        message: `Choose between 1 and ${MAX_QUANTITY} tickets.`
       });
     }
+
+    const level = Number(stadium_level);
+    const selectedSection = Number(section);
+
+    const seats = validateSeats(
+      level,
+      selectedSection,
+      selected_seats,
+      quantity
+    );
 
     let channel;
 
@@ -461,7 +639,10 @@ app.post("/api/payments/initialize", async (req, res) => {
       phone: phone.trim(),
       quantity,
       ticketType,
-      paymentMethod: channel
+      paymentMethod: channel,
+      level,
+      section: selectedSection,
+      seats
     });
 
     try {
@@ -485,7 +666,9 @@ app.post("/api/payments/initialize", async (req, res) => {
             quantity,
             ticket_type: ticketType,
             unit_price: type.price,
-            seats: reservation.seats
+            stadium_level: level,
+            section: selectedSection,
+            selected_seats: seats.map(seat => seat.number)
           }
         },
         { headers: paymentHeaders() }
@@ -502,7 +685,9 @@ app.post("/api/payments/initialize", async (req, res) => {
         status: true,
         authorization_url: response.data.data.authorization_url,
         reference,
-        seats: reservation.seats,
+        level,
+        section: selectedSection,
+        seats,
         expires_in_minutes: RESERVATION_MINUTES,
         amount: type.price * quantity,
         currency: "KES"
@@ -536,8 +721,10 @@ app.get("/api/payments/verify", async (req, res) => {
     }
 
     const booking = await confirmPayment(reference);
-
-    const seats = (booking.seats || []).map(escapeHTML).join(", ");
+    const seats = (booking.seats || [])
+      .map(seat => `Section ${booking.section}, Seat ${seat.number}`)
+      .map(escapeHTML)
+      .join("<br>");
 
     res.send(`
       <!DOCTYPE html>
@@ -587,13 +774,15 @@ app.get("/api/payments/verify", async (req, res) => {
           <hr>
           <p>Customer: ${escapeHTML(booking.customerName)}</p>
           <p>Ticket category: ${escapeHTML(booking.ticketType)}</p>
+          <p>Level: ${booking.level}</p>
+          <p>Section: ${booking.section}</p>
           <p>Tickets: ${booking.quantity}</p>
-          <p>Assigned seats: ${seats}</p>
-          <h2>${money(booking.amount)} KSh</h2>
+          <p>Seats:<br>${seats}</p>
+          <h2>KSh ${money(booking.amount)}</h2>
           <p>Ticket number:</p>
           <div class="ref"><strong>${escapeHTML(booking.ticketNumber)}</strong></div>
           <p>Payment reference: ${escapeHTML(reference)}</p>
-          <p>Keep your ticket number for entry.</p>
+          <p>Keep your ticket details for entry.</p>
           <a href="${escapeHTML(FRONTEND_URL)}">Return to website</a>
         </div>
       </body>
@@ -653,7 +842,6 @@ app.post("/api/payments/webhook", async (req, res) => {
   }
 });
 
-// START SERVER
 app.listen(PORT, () => {
   console.log(`Talanta Sport City running on port ${PORT}`);
 });
