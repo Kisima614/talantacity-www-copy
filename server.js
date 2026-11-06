@@ -1,4 +1,3 @@
-
 const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
@@ -9,9 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const EVENT = "Bayern vs Ajax";
 
-const FRONTEND_URL =
-  process.env.FRONTEND_URL ||
-  "https://kisima614.github.io/ticket-soko/";
+const FRONTEND_URL = "https://talantacity.com/";
 
 const PAYSTACK_URL = "https://api.paystack.co";
 
@@ -21,11 +18,16 @@ const TICKET_PRICES = {
   VVIP: 15000
 };
 
+// CORS CONFIGURATION
 app.use(cors({
   origin: [
+    "https://talantacity.com",
+    "https://www.talantacity.com",
     "https://kisima614.github.io",
     "http://localhost:3000"
-  ]
+  ],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json({
