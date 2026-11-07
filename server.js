@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 10000;
 const EVENT = "Bayern vs Ajax";
 const FRONTEND_URL = "https://www.talantacity.com/";
 const PAYSTACK_URL = "https://api.paystack.co";
-const PAYHERO_URL = "https://backend.payhero.co.ke/api/v2";
 
 const RESERVATION_MINUTES = 15;
 const MAX_QUANTITY = 20;
@@ -76,26 +75,6 @@ function paymentHeaders() {
 
   return {
     Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-    "Content-Type": "application/json"
-  };
-}
-
-// PAYHERO AUTHENTICATION
-// Uses the complete Basic Authorization value supplied by PayHero.
-function payHeroHeaders() {
-  const authorization = process.env.PAYHERO_AUTHORIZATION;
-
-  if (
-    !authorization ||
-    !/^Basic\s+\S+$/i.test(authorization.trim())
-  ) {
-    throw new Error(
-      "PAYHERO_AUTHORIZATION is missing or invalid."
-    );
-  }
-
-  return {
-    Authorization: authorization.trim(),
     "Content-Type": "application/json"
   };
 }
@@ -441,16 +420,8 @@ async function finalizeBooking(reference, paymentReference) {
   });
 }
 
-// VERIFY PAYSTACK PAYMENT
-async function confirmPayment(reference) {
-  const response = await axios.get(
-    `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(reference)}`,
-    { headers: paymentHeaders() }
-  );
-
-  const payment = response.data.data;
-  const meta = payment.metadata || {};
-
+// VERIFY PAYSTACK CARD PAYMENT
+async function confirmCardPayment(reference) {
   const bookingSnap = await db.collection("bookings")
     .doc(reference).get();
 
@@ -460,28 +431,39 @@ async function confirmPayment(reference) {
 
   const booking = bookingSnap.data();
 
+  if (booking.status === "paid") return booking;
+
+  if (booking.paymentMethod !== "card") {
+    throw new Error("This is not a card payment.");
+  }
+
+  const response = await axios.get(
+    `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(reference)}`,
+    { headers: paymentHeaders() }
+  );
+
+  const payment = response.data.data;
+
   if (
-    booking.paymentMethod !== "card" ||
     response.data.status !== true ||
     payment.status !== "success" ||
     payment.reference !== reference ||
     payment.currency !== "KES" ||
-    Number(payment.amount) !== booking.amount * 100 ||
-    meta.event !== EVENT
+    Number(payment.amount) !== booking.amount * 100
   ) {
-    throw new Error("Paystack payment verification failed.");
+    throw new Error("Paystack card payment verification failed.");
   }
 
   return finalizeBooking(reference, reference);
 }
 
-// VERIFY PAYHERO PAYMENT
-async function confirmPayHero(reference) {
+// VERIFY PAYSTACK M-PESA PAYMENT
+async function confirmMpesaPayment(reference) {
   const bookingRef = db.collection("bookings").doc(reference);
   const bookingSnap = await bookingRef.get();
 
   if (!bookingSnap.exists) {
-    throw new Error("PayHero booking not found.");
+    throw new Error("M-Pesa booking not found.");
   }
 
   const booking = bookingSnap.data();
@@ -490,32 +472,31 @@ async function confirmPayHero(reference) {
 
   if (
     booking.paymentMethod !== "mobile_money" ||
-    !booking.payheroReference
+    !booking.paystackReference
   ) {
-    throw new Error("Invalid PayHero booking.");
+    throw new Error("M-Pesa payment reference not found.");
   }
 
   const response = await axios.get(
-    `${PAYHERO_URL}/transaction-status`,
-    {
-      params: {
-        reference: booking.payheroReference
-      },
-      headers: payHeroHeaders()
-    }
+    `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(
+      booking.paystackReference
+    )}`,
+    { headers: paymentHeaders() }
   );
 
-  const payment = response.data;
+  const payment = response.data.data;
 
   if (
-    payment.success !== true ||
-    String(payment.status).toUpperCase() !== "SUCCESS" ||
-    payment.reference !== booking.payheroReference
+    response.data.status !== true ||
+    payment.status !== "success" ||
+    payment.reference !== booking.paystackReference ||
+    payment.currency !== "KES" ||
+    Number(payment.amount) !== booking.amount * 100
   ) {
-    throw new Error("PayHero has not confirmed this payment.");
+    throw new Error("Paystack has not confirmed this M-Pesa payment.");
   }
 
-  return finalizeBooking(reference, booking.payheroReference);
+  return finalizeBooking(reference, booking.paystackReference);
 }
 
 // HOME
@@ -527,7 +508,7 @@ app.get("/", (req, res) => {
     capacity: 70000,
     categories: TICKET_TYPES,
     currency: "KES",
-    paymentMethods: ["PayHero M-Pesa", "Paystack Card"],
+    paymentMethods: ["Paystack M-Pesa", "Paystack Card"],
     manualSeatSelection: true,
     seatsPerSection: SEATS_PER_SECTION
   });
@@ -638,6 +619,7 @@ app.get("/api/tickets/availability", async (req, res) => {
 // INITIALIZE PAYMENT
 app.post("/api/payments/initialize", async (req, res) => {
   let reference;
+  let reservationCreated = false;
 
   try {
     const {
@@ -703,28 +685,8 @@ app.post("/api/payments/initialize", async (req, res) => {
       throw new Error("Choose M-Pesa or bank card.");
     }
 
-    if (isCard && !process.env.PAYSTACK_SECRET_KEY) {
+    if (!process.env.PAYSTACK_SECRET_KEY) {
       throw new Error("Paystack is not configured.");
-    }
-
-    // CHECK PAYHERO AUTHORIZATION AND CHANNEL
-    if (
-      isMobile &&
-      (
-        !process.env.PAYHERO_AUTHORIZATION ||
-        !process.env.PAYHERO_CHANNEL_ID
-      )
-    ) {
-      throw new Error("PayHero is not configured.");
-    }
-
-    const channelId = Number(process.env.PAYHERO_CHANNEL_ID);
-
-    if (
-      isMobile &&
-      (!Number.isInteger(channelId) || channelId <= 0)
-    ) {
-      throw new Error("Invalid PayHero channel ID.");
     }
 
     await releaseExpiredReservations();
@@ -744,9 +706,11 @@ app.post("/api/payments/initialize", async (req, res) => {
       seats
     });
 
+    reservationCreated = true;
+
     const amount = type.price * quantity;
 
-    // PAYSTACK: CARDS ONLY
+    // PAYSTACK CARD PAYMENT
     if (isCard) {
       const callback =
         process.env.CALLBACK_URL ||
@@ -763,6 +727,7 @@ app.post("/api/payments/initialize", async (req, res) => {
           channels: ["card"],
           metadata: {
             event: EVENT,
+            booking_reference: reference,
             customer_name: name.trim(),
             phone: mobileNumber,
             quantity,
@@ -780,12 +745,13 @@ app.post("/api/payments/initialize", async (req, res) => {
         response.data.status !== true ||
         !response.data.data.authorization_url
       ) {
-        throw new Error("Paystack initialization failed.");
+        throw new Error("Paystack card initialization failed.");
       }
 
       return res.json({
         status: true,
         provider: "paystack",
+        payment_method: "card",
         authorization_url: response.data.data.authorization_url,
         reference,
         amount,
@@ -793,43 +759,63 @@ app.post("/api/payments/initialize", async (req, res) => {
       });
     }
 
-    // PAYHERO: M-PESA ONLY
-    const callbackUrl =
-      "https://talanta-sport-city-backend.onrender.com/api/payhero/callback";
-
+    // PAYSTACK M-PESA STK PUSH
     const response = await axios.post(
-      `${PAYHERO_URL}/payments`,
+      `${PAYSTACK_URL}/charge`,
       {
-        amount,
-        phone_number: mobileNumber,
-        channel_id: channelId,
-        provider: "m-pesa",
-        external_reference: reference,
-        customer_name: name.trim(),
-        callback_url: callbackUrl
+        email: email.trim(),
+        amount: amount * 100,
+        currency: "KES",
+        reference,
+        mobile_money: {
+          phone: mobileNumber,
+          provider: "mpesa"
+        },
+        metadata: {
+          event: EVENT,
+          booking_reference: reference,
+          customer_name: name.trim(),
+          phone: mobileNumber,
+          quantity,
+          ticket_type: ticketType,
+          stadium_level: level,
+          section: selectedSection,
+          selected_seats: seats.map(seat => seat.number)
+        }
       },
-      { headers: payHeroHeaders() }
+      { headers: paymentHeaders() }
     );
 
     if (
-      response.data.success !== true ||
-      !response.data.reference
+      response.data.status !== true ||
+      !response.data.data ||
+      !response.data.data.reference
     ) {
-      throw new Error("PayHero could not initiate the M-Pesa payment.");
+      throw new Error(
+        response.data.message || "Paystack could not initiate M-Pesa."
+      );
     }
 
+    const paystackReference = response.data.data.reference;
+
     await db.collection("bookings").doc(reference).update({
-      payheroReference: response.data.reference,
-      paymentProvider: "payhero",
-      payheroCheckoutRequestID:
-        response.data.CheckoutRequestID || null,
-      paymentInitiatedAt: Timestamp.now()
+      paystackReference,
+      paymentProvider: "paystack",
+      paymentInitiatedAt: Timestamp.now(),
+      paystackChargeStatus: response.data.data.status || "pending"
     });
 
     return res.json({
       status: true,
-      provider: "payhero",
-      message: "M-Pesa prompt sent. Enter your M-Pesa PIN.",
+      provider: "paystack",
+      payment_method: "mobile_money",
+      message:
+        response.data.data.display_text ||
+        response.data.message ||
+        "Check your phone and complete the M-Pesa payment prompt.",
+      display_text:
+        response.data.data.display_text ||
+        "Check your phone and complete the M-Pesa payment prompt.",
       reference,
       amount,
       currency: "KES"
@@ -841,8 +827,9 @@ app.post("/api/payments/initialize", async (req, res) => {
       error.response?.data || error.message
     );
 
-    if (reference) {
+    if (reference && reservationCreated) {
       try {
+        // Only release when the payment request was rejected.
         await releaseBooking(reference);
       } catch (releaseError) {
         console.error("Reservation release error:", releaseError.message);
@@ -853,13 +840,14 @@ app.post("/api/payments/initialize", async (req, res) => {
       status: false,
       message:
         error.response?.data?.message ||
+        error.response?.data?.data?.message ||
         error.message ||
         "Unable to start payment."
     });
   }
 });
 
-// PAYSTACK RETURN / VERIFICATION
+// PAYSTACK CARD RETURN / VERIFICATION
 app.get("/api/payments/verify", async (req, res) => {
   try {
     const reference = String(req.query.reference || "");
@@ -868,7 +856,7 @@ app.get("/api/payments/verify", async (req, res) => {
       return res.status(400).send("Invalid booking reference.");
     }
 
-    const booking = await confirmPayment(reference);
+    const booking = await confirmCardPayment(reference);
 
     const seats = (booking.seats || [])
       .map(seat =>
@@ -956,63 +944,6 @@ app.get("/api/payments/verify", async (req, res) => {
   }
 });
 
-// PAYHERO CALLBACK
-app.post("/api/payhero/callback", async (req, res) => {
-  try {
-    const callback = req.body.response || {};
-    const reference = String(callback.ExternalReference || "");
-
-    if (!/^TSC-[a-f0-9-]{36}$/i.test(reference)) {
-      return res.sendStatus(400);
-    }
-
-    const bookingSnap = await db.collection("bookings")
-      .doc(reference).get();
-
-    if (!bookingSnap.exists) {
-      return res.sendStatus(404);
-    }
-
-    const booking = bookingSnap.data();
-
-    if (booking.status === "paid") {
-      return res.sendStatus(200);
-    }
-
-    if (
-      booking.paymentMethod !== "mobile_money" ||
-      !booking.payheroReference
-    ) {
-      return res.sendStatus(400);
-    }
-
-    // Callback is not treated as payment proof.
-    // Verify the transaction directly with PayHero.
-    if (
-      String(callback.Status || "").toLowerCase() !== "success" ||
-      Number(callback.ResultCode) !== 0 ||
-      Number(callback.Amount) !== booking.amount
-    ) {
-      console.log("PayHero payment not successful:", reference);
-      return res.sendStatus(200);
-    }
-
-    await confirmPayHero(reference);
-
-    console.log("PayHero booking confirmed:", reference);
-
-    return res.sendStatus(200);
-
-  } catch (error) {
-    console.error(
-      "PayHero callback error:",
-      error.response?.data || error.message
-    );
-
-    return res.sendStatus(500);
-  }
-});
-
 // CHECK PAYMENT STATUS FOR WEBSITE
 app.get("/api/payments/status/:reference", async (req, res) => {
   try {
@@ -1025,8 +956,8 @@ app.get("/api/payments/status/:reference", async (req, res) => {
       });
     }
 
-    const snap = await db.collection("bookings")
-      .doc(reference).get();
+    const bookingRef = db.collection("bookings").doc(reference);
+    const snap = await bookingRef.get();
 
     if (!snap.exists) {
       return res.status(404).json({
@@ -1040,14 +971,14 @@ app.get("/api/payments/status/:reference", async (req, res) => {
     if (
       booking.status === "pending" &&
       booking.paymentMethod === "mobile_money" &&
-      booking.payheroReference
+      booking.paystackReference
     ) {
       try {
-        await confirmPayHero(reference);
-        const refreshed = await snap.ref.get();
+        await confirmMpesaPayment(reference);
+        const refreshed = await bookingRef.get();
         booking = refreshed.data();
       } catch (error) {
-        console.log("PayHero status check:", error.message);
+        console.log("Paystack M-Pesa status check:", error.message);
       }
     }
 
@@ -1097,11 +1028,32 @@ app.post("/api/payments/webhook", async (req, res) => {
     }
 
     if (req.body.event === "charge.success") {
-      const reference = req.body.data.reference;
+      const paystackReference = req.body.data.reference;
 
-      await confirmPayment(reference);
+      const matches = await db.collection("bookings")
+        .where("paystackReference", "==", paystackReference)
+        .limit(1)
+        .get();
 
-      console.log("Paystack payment confirmed:", reference);
+      if (!matches.empty) {
+        const bookingDoc = matches.docs[0];
+        const booking = bookingDoc.data();
+
+        if (booking.paymentMethod === "mobile_money") {
+          await confirmMpesaPayment(bookingDoc.id);
+          console.log("Paystack M-Pesa confirmed:", bookingDoc.id);
+        }
+      } else {
+        // Card payments use the booking reference directly.
+        const cardBooking = await db.collection("bookings")
+          .doc(paystackReference).get();
+
+        if (cardBooking.exists &&
+            cardBooking.data().paymentMethod === "card") {
+          await confirmCardPayment(paystackReference);
+          console.log("Paystack card confirmed:", paystackReference);
+        }
+      }
     }
 
     return res.sendStatus(200);
