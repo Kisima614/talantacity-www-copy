@@ -3,171 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#10131d">
+<meta name="theme-color" content="#080d19">
 <title>Talanta Sport City | Stadium Tickets</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-
-body{
-font-family:Arial,sans-serif;
-background:#10131d;
-color:#18202c;
-}
+body{font-family:Arial,sans-serif;background:#080d19;color:#101827}
 
 header{
-background:rgba(8,13,25,.97);
-color:white;
-padding:18px 5%;
-display:flex;
-justify-content:space-between;
-align-items:center;
-flex-wrap:wrap;
-gap:12px;
-position:relative;
-z-index:5;
+background:rgba(5,12,25,.96);
+color:white;padding:15px 5%;
+display:flex;justify-content:space-between;
+align-items:center;flex-wrap:wrap;gap:12px;
+position:relative;z-index:5
 }
 
-.logo{
-font-size:23px;
-font-weight:900;
-color:#f5b942;
-letter-spacing:.5px;
-}
-
-nav a{
-color:white;
-text-decoration:none;
-margin:7px;
-font-size:15px;
-font-weight:bold;
-}
-
+.logo{font-size:23px;font-weight:900;color:white;letter-spacing:1px}
+.logo span{display:block;font-size:11px;letter-spacing:5px}
+nav a{color:white;text-decoration:none;margin:10px;font-size:15px;font-weight:bold}
 nav a:hover{color:#f5b942}
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:15px;
-}
+.container{max-width:1100px;margin:auto;padding:12px}
 
-.event{
-background:transparent;
-margin:0 0 18px;
-border-radius:12px;
-overflow:hidden;
-}
+.event{margin-bottom:16px;overflow:hidden}
 
-/* SELF-CONTAINED SUNSET STADIUM BACKGROUND */
+/* PHOTOGRAPHIC SUNSET STADIUM HERO */
 .banner{
 position:relative;
-isolation:isolate;
-overflow:hidden;
-background:
-linear-gradient(
-180deg,
-rgba(12,13,32,.15) 0%,
-rgba(12,13,32,.05) 40%,
-rgba(5,12,25,.65) 100%
-),
-linear-gradient(
-180deg,
-#352c55 0%,
-#8c4660 23%,
-#e47a51 48%,
-#f4ae64 62%,
-#34344b 78%,
-#111c2b 100%
-);
+min-height:610px;
+padding:75px 30px 110px;
 color:white;
-text-align:left;
-padding:65px 30px;
-min-height:650px;
 display:flex;
 flex-direction:column;
 justify-content:center;
-}
-
-.banner:before{
-content:"";
-position:absolute;
-z-index:-1;
-inset:0;
-background:
-radial-gradient(ellipse at 50% 53%,
-rgba(255,193,112,.85) 0%,
-rgba(244,132,92,.45) 22%,
-transparent 58%),
-linear-gradient(180deg,
-transparent 0%,
-rgba(17,24,42,.05) 55%,
-rgba(5,13,26,.65) 100%);
+background-image:
+linear-gradient(90deg,rgba(3,8,20,.70),rgba(3,8,20,.12)),
+linear-gradient(0deg,rgba(3,8,20,.65),transparent 65%),
+url("https://images.unsplash.com/photo-1684085035830-2da55bb70375?auto=format&fit=crop&w=2400&q=85");
+background-size:cover;
+background-position:center 55%;
+background-repeat:no-repeat;
 }
 
 .banner:after{
 content:"";
 position:absolute;
-z-index:-1;
-bottom:0;
-left:0;
-width:100%;
-height:34%;
-background:
-radial-gradient(circle at 12% 35%,#ffe5a2 0 2px,transparent 4px),
-radial-gradient(circle at 25% 20%,#ffe5a2 0 2px,transparent 4px),
-radial-gradient(circle at 45% 27%,#ffe5a2 0 2px,transparent 4px),
-radial-gradient(circle at 66% 22%,#ffe5a2 0 2px,transparent 4px),
-radial-gradient(circle at 83% 32%,#ffe5a2 0 2px,transparent 4px),
-linear-gradient(175deg,
-transparent 0 25%,
-#182b35 26% 34%,
-#0c1c2b 35% 100%);
-clip-path:polygon(
-0 35%,8% 30%,15% 36%,22% 22%,30% 30%,
-38% 12%,46% 25%,54% 15%,62% 30%,
-70% 17%,78% 28%,86% 12%,94% 29%,
-100% 20%,100% 100%,0 100%);
-}
-
-/* Stadium illustration */
-.stadium-art{
-position:absolute;
-z-index:-1;
-bottom:0;
-left:0;
-width:100%;
-height:40%;
+inset:0;
+background:linear-gradient(180deg,transparent 60%,rgba(5,12,25,.5));
 pointer-events:none;
 }
 
-.banner h1{
-font-size:clamp(42px,8vw,76px);
-margin:20px 0;
-line-height:1;
-font-weight:900;
-text-transform:uppercase;
-text-shadow:0 3px 15px rgba(0,0,0,.5);
+.banner-content{position:relative;z-index:2;max-width:850px}
+
+.teams{
+display:flex;
+align-items:center;
+gap:22px;
+margin-bottom:25px;
 }
 
-.banner span{color:#ffc329}
+.team{
+width:72px;height:72px;
+border-radius:50%;
+background:white;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;
+}
+
+.team img{width:100%;height:100%;object-fit:contain;padding:5px}
+
+.team-divider{height:65px;width:2px;background:rgba(255,255,255,.6)}
+
+.banner .event-label{
+font-size:18px;
+font-weight:bold;
+letter-spacing:1px;
+}
+
+.banner h1{
+font-size:clamp(43px,8vw,82px);
+line-height:1.02;
+font-weight:900;
+margin:20px 0;
+text-transform:uppercase;
+text-shadow:0 3px 15px #000;
+}
+
+.banner h1 span{color:#ffc329}
 
 .banner h2{
 font-size:clamp(22px,4vw,30px);
 margin-bottom:8px;
 }
 
-.banner p{
-font-size:18px;
-line-height:1.8;
-text-shadow:0 2px 8px rgba(0,0,0,.6);
+.banner p{font-size:18px;line-height:1.6}
+
+.event-time{
+font-size:clamp(17px,3vw,23px)!important;
+font-weight:bold;
+margin-top:17px;
 }
 
-.banner .event-time{
-font-size:clamp(17px,3vw,23px);
+.buy-btn{
+display:inline-block;
+background:white;
+color:#111827;
+padding:17px 38px;
+border-radius:4px;
+text-decoration:none;
+font-size:19px;
 font-weight:bold;
-margin-top:18px;
+margin-top:25px;
 }
+
+.buy-btn:hover{background:#ffc329}
+
+.start-price{margin-top:18px;font-size:16px!important}
+.start-price strong{font-weight:900}
 
 .details{
 display:grid;
@@ -177,37 +132,27 @@ text-align:center;
 gap:10px;
 background:white;
 border-radius:12px;
-margin:0 10px;
-box-shadow:0 5px 20px rgba(0,0,0,.15);
+margin:-4px 10px 18px;
+position:relative;
+z-index:3;
+box-shadow:0 5px 20px rgba(0,0,0,.2);
 }
 
 .details strong{font-size:20px}
-
-.details small{
-display:block;
-color:#7b8491;
-margin-top:8px;
-font-size:15px;
-}
+.details small{display:block;color:#64748b;margin-top:8px;font-size:15px}
 
 .panel{
 background:white;
 border:1px solid #e1e4e9;
 border-radius:12px;
-margin:18px 0;
+margin:16px 0;
 overflow:hidden;
-box-shadow:0 5px 20px rgba(0,0,0,.15);
+box-shadow:0 5px 20px rgba(0,0,0,.16);
 }
 
 .panel-inner{padding:18px}
 h2{font-size:23px}
-
-.muted{
-color:#7d8592;
-font-size:13px;
-margin-top:7px;
-line-height:1.6;
-}
+.muted{color:#64748b;font-size:13px;margin-top:7px;line-height:1.6}
 
 .toolbar{
 display:flex;
@@ -220,351 +165,132 @@ margin:17px 0;
 
 .toolbar button{
 padding:12px 15px;
-border:0;
-border-radius:5px;
-background:#101a25;
-color:white;
-font-weight:bold;
-cursor:pointer;
+border:0;border-radius:6px;
+background:#101a25;color:white;
+font-weight:bold;cursor:pointer;
 }
 
-.toolbar button.active{background:#0d8046}
+.toolbar button.active{background:#078343}
 
-.legend{
-display:flex;
-flex-wrap:wrap;
-gap:12px;
-font-size:12px;
-margin:12px 0 18px;
-}
-
-.dot{
-display:inline-block;
-width:11px;
-height:11px;
-border-radius:3px;
-margin-right:5px;
-}
-
-.blue{background:#6191ed}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;margin:12px 0 18px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px}
+.blue{background:#2679ed}
 .red{background:#c51d25}
 .grey{background:#c5cad2}
 
-.map-wrap{
-background:#edf0f5;
-padding:12px;
-border:1px solid #e0e4e9;
-overflow:hidden;
-border-radius:8px;
-}
+.map-wrap{background:#edf2f9;padding:12px;border:1px solid #e0e4e9;overflow:hidden;border-radius:8px}
+#stadiumMap{display:block;width:100%;max-width:800px;margin:auto}
 
-#stadiumMap{
-display:block;
-width:100%;
-max-width:640px;
-margin:auto;
-}
-
-.map-section{
-cursor:pointer;
-stroke:#fff;
-stroke-width:1.5;
-fill:#6191ed;
-}
-
+.map-section{cursor:pointer;stroke:#fff;stroke-width:2;fill:#2879ed}
 .map-section.selected{fill:#c51d25}
+.map-section:hover{stroke:#e3a82e;stroke-width:3}
+.map-label{font-size:12px;font-weight:bold;fill:white;pointer-events:none;text-anchor:middle}
+.pitch{fill:#4caf68;stroke:white;stroke-width:2}
+.pitch-line{fill:none;stroke:white;stroke-width:2}
 
-.map-section:hover{
-stroke:#e3a82e;
-stroke-width:3;
-}
-
-.map-label{
-font-size:12px;
-font-weight:bold;
-fill:white;
-pointer-events:none;
-text-anchor:middle;
-}
-
-.pitch{
-fill:#87c39b;
-stroke:white;
-stroke-width:2;
-}
-
-.pitch-line{
-fill:none;
-stroke:white;
-stroke-width:2;
-}
-
-.ticket-control{
-display:flex;
-align-items:center;
-gap:22px;
-margin:15px 0;
-}
-
+.ticket-control{display:flex;align-items:center;gap:22px;margin:15px 0}
 .ticket-control button{
-width:43px;
-height:43px;
-background:white;
-border:1px solid #aaa;
-font-size:23px;
-cursor:pointer;
+width:48px;height:43px;background:white;
+border:1px solid #cbd5e1;border-radius:7px;
+font-size:23px;cursor:pointer;
 }
-
 .ticket-control strong{font-size:24px}
 
-.price-list{
-display:flex;
-gap:10px;
-overflow-x:auto;
-padding:4px 0 15px;
-}
+.price-list{display:flex;gap:14px;overflow-x:auto;padding:4px 0 15px}
 
 .price-card{
-min-width:155px;
-border:1px solid #d2d5da;
-border-radius:7px;
-padding:13px;
+min-width:165px;
+border:1px solid #cbd5e1;
+border-radius:8px;
+padding:14px;
 background:white;
 text-align:left;
 cursor:pointer;
 }
 
-.price-card strong{
-display:block;
-margin-top:7px;
-font-size:18px;
-}
-
-.price-card small{color:#7e8793}
-
-.price-card.active{
-border:2px solid #12804a;
-background:#f0faf4;
-}
+.price-card strong{display:block;margin-top:7px;font-size:19px}
+.price-card small{color:#64748b}
+.price-card.active{border:2px solid #078343;background:#eaf8ef}
 
 .green-btn{
-background:#087d43;
-color:white;
-border:0;
-padding:16px;
-width:100%;
-font-weight:bold;
-font-size:17px;
-border-radius:6px;
-cursor:pointer;
-transition:.2s;
+background:#087d43;color:white;border:0;
+padding:16px;width:100%;font-weight:bold;
+font-size:17px;border-radius:6px;cursor:pointer;
 }
-
 .green-btn:hover{background:#056735}
 .green-btn:disabled{opacity:.5}
 
-.section-grid{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:8px;
-padding:15px;
-}
-
+.section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:15px}
 .section-btn{
-padding:12px 3px;
-border:1px solid #d5dbe3;
-background:#f4f6f8;
-border-radius:5px;
-cursor:pointer;
+padding:12px 3px;border:1px solid #d5dbe3;
+background:#f0f3f7;border-radius:6px;cursor:pointer;
 }
+.section-btn.selected{background:#c51d25;color:white}
 
-.section-btn.selected{
-background:#c51d25;
-color:white;
-}
+.seat-area{padding:16px;border-top:1px solid #ddd}
+.seat-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:14px}
+.seat{padding:10px 1px;background:#dce8f8;border:0;border-radius:4px;font-size:12px;cursor:pointer}
+.seat.selected{background:#c51d25;color:white}
+.seat.unavailable{background:#c5cad2;color:#737b85;cursor:not-allowed}
 
-.seat-area{
-padding:16px;
-border-top:1px solid #ddd;
-}
+.summary{background:#eef2f7;padding:16px;border-radius:7px;margin-top:17px}
+.summary-row{display:flex;justify-content:space-between;gap:10px;margin:11px 0;font-size:14px}
+.summary-row.total{font-size:20px;font-weight:bold;border-top:1px solid #ccd3dc;padding-top:14px}
 
-.seat-grid{
-display:grid;
-grid-template-columns:repeat(10,1fr);
-gap:6px;
-margin-top:14px;
-}
+label{display:block;font-size:14px;font-weight:bold;margin:16px 0 7px}
+input{width:100%;padding:13px;border:1px solid #cbd1da;border-radius:5px;font-size:15px}
 
-.seat{
-padding:10px 1px;
-background:#dce8f8;
-border:0;
-border-radius:4px;
-font-size:12px;
-cursor:pointer;
-}
-
-.seat.selected{
-background:#c51d25;
-color:white;
-}
-
-.seat.unavailable{
-background:#c5cad2;
-color:#737b85;
-cursor:not-allowed;
-}
-
-.summary{
-background:#eef2f7;
-padding:16px;
-border-radius:7px;
-margin-top:17px;
-}
-
-.summary-row{
-display:flex;
-justify-content:space-between;
-gap:10px;
-margin:11px 0;
-font-size:14px;
-}
-
-.summary-row.total{
-font-size:20px;
-font-weight:bold;
-border-top:1px solid #ccd3dc;
-padding-top:14px;
-}
-
-label{
-display:block;
-font-size:14px;
-font-weight:bold;
-margin:16px 0 7px;
-}
-
-input{
-width:100%;
-padding:13px;
-border:1px solid #cbd1da;
-border-radius:5px;
-font-size:15px;
-}
-
-.payment{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-.payment label{
-border:1px solid #ddd;
-padding:13px;
-border-radius:5px;
-display:flex;
-align-items:center;
-gap:9px;
-}
-
+.payment{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.payment label{border:1px solid #ddd;padding:13px;border-radius:5px;display:flex;align-items:center;gap:9px}
 .payment input{width:auto}
 
-footer{
-background:rgba(9,15,29,.98);
-color:white;
-text-align:center;
-padding:30px;
-margin-top:35px;
-}
-
-footer p{
-color:#bbb;
-margin-top:10px;
-font-size:13px;
-}
-
-#message{
-margin-top:13px;
-font-size:14px;
-line-height:1.6;
-}
+footer{background:#080e1b;color:white;text-align:center;padding:30px;margin-top:35px}
+footer p{color:#bbb;margin-top:10px;font-size:13px}
+#message{margin-top:13px;font-size:14px;line-height:1.6}
 
 @media(max-width:700px){
-
-header{
-justify-content:center;
-padding:16px 10px;
-}
-
-.logo{
-font-size:20px;
-text-align:center;
-}
-
-nav{
-text-align:center;
-width:100%;
-}
-
-nav a{
-font-size:13px;
-margin:5px;
-}
-
-.container{padding:10px}
+header{justify-content:center;padding:14px 8px}
+.logo{font-size:20px;text-align:center}
+nav{text-align:center;width:100%}
+nav a{font-size:13px;margin:5px}
+.container{padding:9px}
 
 .banner{
-min-height:590px;
-padding:45px 18px;
+min-height:570px;
+padding:45px 18px 100px;
+background-position:center center;
 }
 
-.banner h1{
-font-size:clamp(38px,10vw,58px);
-}
-
+.banner h1{font-size:clamp(39px,10vw,58px)}
 .banner p{font-size:16px}
+.banner .event-label{font-size:14px}
+.teams{gap:14px;margin-bottom:22px}
+.team{width:55px;height:55px}
+.team-divider{height:50px}
 
-.details{
-grid-template-columns:1fr;
-gap:18px;
-padding:18px;
-}
-
-.details>div{
-border-bottom:1px solid #eee;
-padding-bottom:12px;
-}
-
+.details{grid-template-columns:1fr;gap:18px;padding:18px;margin-top:-4px}
+.details>div{border-bottom:1px solid #eee;padding-bottom:12px}
 .panel-inner{padding:12px}
-
 .seat-grid{gap:4px}
-
-.seat{
-font-size:10px;
-padding:9px 0;
-}
-
-.section-grid{
-grid-template-columns:repeat(3,1fr);
-}
-
+.seat{font-size:10px;padding:9px 0}
+.section-grid{grid-template-columns:repeat(3,1fr)}
 .toolbar{gap:8px}
-
-.toolbar button{
-padding:11px 10px;
-font-size:12px;
-}
-
+.toolbar button{padding:11px 10px;font-size:12px}
 .price-card{min-width:145px}
 .payment{grid-template-columns:1fr}
+.buy-btn{padding:15px 28px}
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
-<div class="logo">🎟 TALANTA SPORT CITY</div>
+<div class="logo">
+TALANTA
+<span>SPORTS CITY</span>
+</div>
 
 <nav>
 <a href="#home">Home</a>
@@ -579,8 +305,23 @@ font-size:12px;
 <section id="home" class="event">
 
 <div class="banner">
+<div class="banner-content">
 
-<p>★ INTERNATIONAL CLUB FRIENDLY ★</p>
+<div class="teams">
+
+<div class="team">
+<img src="https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_Munich_logo_%282017%29.svg" alt="Bayern Munich">
+</div>
+
+<div class="team-divider"></div>
+
+<div class="team">
+<img src="https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg" alt="Ajax">
+</div>
+
+</div>
+
+<p class="event-label">★ INTERNATIONAL CLUB FRIENDLY ★</p>
 
 <h1>BAYERN <span>VS</span> AJAX</h1>
 
@@ -592,67 +333,11 @@ font-size:12px;
 Tue 5 Jan 2027 · Starts at 8:00 PM EAT
 </p>
 
-<!-- Stadium illustration -->
-<svg class="stadium-art" viewBox="0 0 1200 400"
-preserveAspectRatio="xMidYMax slice"
-xmlns="http://www.w3.org/2000/svg">
+<a href="#stadium" class="buy-btn">Buy tickets</a>
 
-<defs>
-<linearGradient id="stadiumGlow" x1="0" y1="0" x2="0" y2="1">
-<stop offset="0" stop-color="#ffcf8a"/>
-<stop offset="1" stop-color="#d65d42"/>
-</linearGradient>
-<linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
-<stop offset="0" stop-color="#596477"/>
-<stop offset="1" stop-color="#111d30"/>
-</linearGradient>
-</defs>
+<p class="start-price">From <strong>KSh 2,500</strong> per seat · <a href="#stadium" style="color:white">All prices</a></p>
 
-<ellipse cx="600" cy="350" rx="560" ry="160"
-fill="#111c2b"/>
-
-<path d="M70 250 Q600 -40 1130 250
-L1080 335 Q600 105 120 335Z"
-fill="url(#roof)" stroke="#f5b77d" stroke-width="5"/>
-
-<path d="M120 285 Q600 80 1080 285
-L1050 360 Q600 180 150 360Z"
-fill="#26374a" stroke="#f4bd83" stroke-width="4"/>
-
-<path d="M175 300 Q600 140 1025 300"
-fill="none" stroke="#ffdcaa" stroke-width="7"/>
-
-<path d="M200 320 Q600 170 1000 320"
-fill="none" stroke="#e88d59" stroke-width="5"/>
-
-<g fill="#ffe5b4">
-<circle cx="160" cy="245" r="7"/>
-<circle cx="280" cy="207" r="7"/>
-<circle cx="420" cy="181" r="7"/>
-<circle cx="600" cy="170" r="8"/>
-<circle cx="780" cy="181" r="7"/>
-<circle cx="920" cy="207" r="7"/>
-<circle cx="1040" cy="245" r="7"/>
-</g>
-
-<path d="M250 300 Q600 225 950 300
-L900 400 H300Z" fill="#172b32"/>
-
-<path d="M350 310 Q600 270 850 310
-L810 390 H390Z" fill="#80a77c"/>
-
-<path d="M600 310V390 M390 350H810"
-stroke="#e8e9d0" stroke-width="3" fill="none"/>
-
-<g fill="#ffe6ae">
-<circle cx="95" cy="320" r="4"/>
-<circle cx="130" cy="340" r="4"/>
-<circle cx="1090" cy="320" r="4"/>
-<circle cx="1060" cy="340" r="4"/>
-</g>
-
-</svg>
-
+</div>
 </div>
 
 <div class="details" id="event">
@@ -712,19 +397,14 @@ Choose a level, select a numbered section, then choose your exact seats.
 <svg id="stadiumMap" viewBox="0 0 600 510" aria-label="Illustrative stadium seating map">
 
 <ellipse cx="300" cy="255" rx="260" ry="220" fill="#d8dde5" stroke="#aeb6c2" stroke-width="2"/>
-
 <ellipse cx="300" cy="255" rx="208" ry="171" fill="#edf0f5" stroke="#b4bdca" stroke-width="14"/>
-
 <ellipse cx="300" cy="255" rx="157" ry="124" fill="#d7dce5" stroke="#b4bdca" stroke-width="5"/>
 
 <rect class="pitch" x="190" y="180" width="220" height="150" rx="3"/>
-
 <path class="pitch-line" d="M300 180V330 M190 255H410 M300 218a37 37 0 1 0 0 74a37 37 0 1 0 0-74"/>
 
 <text x="300" y="168" text-anchor="middle" font-size="11" fill="#78818d">NORTH</text>
-
 <text x="300" y="350" text-anchor="middle" font-size="11" fill="#78818d">SOUTH</text>
-
 <g id="sections"></g>
 
 </svg>
@@ -740,7 +420,7 @@ Tap a numbered section on the map or use the section buttons below.
 
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
 
-<h2>Ticket category and quantity</h2>
+<h2>Ticket categories and quantity</h2>
 
 <div class="ticket-control">
 <button type="button" onclick="changeQuantity(-1)">−</button>
@@ -789,30 +469,11 @@ Level 1 · Sections 101–128
 
 <div class="summary">
 
-<div class="summary-row">
-<span>Category</span>
-<strong id="sumCategory">Regular</strong>
-</div>
-
-<div class="summary-row">
-<span>Level</span>
-<strong id="sumLevel">Level 1</strong>
-</div>
-
-<div class="summary-row">
-<span>Selected section</span>
-<strong id="sumSection">None</strong>
-</div>
-
-<div class="summary-row">
-<span>Tickets required</span>
-<strong id="sumQuantity">1</strong>
-</div>
-
-<div class="summary-row">
-<span>Seats selected</span>
-<strong id="sumSeats">0</strong>
-</div>
+<div class="summary-row"><span>Category</span><strong id="sumCategory">Regular</strong></div>
+<div class="summary-row"><span>Level</span><strong id="sumLevel">Level 1</strong></div>
+<div class="summary-row"><span>Selected section</span><strong id="sumSection">None</strong></div>
+<div class="summary-row"><span>Tickets required</span><strong id="sumQuantity">1</strong></div>
+<div class="summary-row"><span>Seats selected</span><strong id="sumSeats">0</strong></div>
 
 <div class="summary-row total">
 <span>Total</span>
@@ -832,19 +493,10 @@ Tap to load available numbered seats for your chosen section.
 </div>
 
 <div class="seat-area" id="seatArea" hidden>
-
 <h3>Choose your exact seats</h3>
-
-<p class="muted" id="seatMessage">
-Select the seat numbers you want.
-</p>
-
+<p class="muted" id="seatMessage">Select the seat numbers you want.</p>
 <div class="seat-grid" id="seatGrid"></div>
-
-<p class="muted" style="margin-top:12px">
-Blue = available · Red = selected · Grey = unavailable
-</p>
-
+<p class="muted" style="margin-top:12px">Blue = available · Red = selected · Grey = unavailable</p>
 </div>
 
 <div class="panel-inner">
@@ -861,9 +513,7 @@ CONTINUE TO CHECKOUT
 
 <h2>Complete your booking</h2>
 
-<p class="muted">
-Enter your details to continue to secure payment.
-</p>
+<p class="muted">Enter your details to continue to secure payment.</p>
 
 <form id="bookingForm">
 
@@ -885,17 +535,8 @@ Enter your details to continue to secure payment.
 <label>Payment method</label>
 
 <div class="payment">
-
-<label>
-<input type="radio" name="method" value="mobile_money" checked>
-M-Pesa
-</label>
-
-<label>
-<input type="radio" name="method" value="card">
-Bank Card
-</label>
-
+<label><input type="radio" name="method" value="mobile_money" checked> M-Pesa</label>
+<label><input type="radio" name="method" value="card"> Bank Card</label>
 </div>
 
 <div class="summary-row total">
@@ -916,13 +557,9 @@ PAY WITH PAYSTACK
 </main>
 
 <footer>
-
-<div class="logo">🎟 TALANTA SPORT CITY</div>
-
+<div class="logo">TALANTA <span>SPORTS CITY</span></div>
 <p>Discover. Book. Experience.</p>
-
 <p>© 2026 Talanta Sport City. All rights reserved.</p>
-
 </footer>
 
 <script>
@@ -940,142 +577,103 @@ let currentSeats=[];
 let seatRequestToken=0;
 
 const $=id=>document.getElementById(id);
-
 const money=n=>"KSh "+Number(n).toLocaleString("en-KE");
 
 function sectionNumbers(){
-
 if(level===1)return Array.from({length:28},(_,i)=>101+i);
-
 if(level===2)return Array.from({length:20},(_,i)=>201+i);
-
 return Array.from({length:35},(_,i)=>401+i);
-
 }
 
 function drawMap(){
 
 const group=$("sections");
-
 group.innerHTML="";
-
 const numbers=sectionNumbers();
-
 const cx=300,cy=255,rx=244,ry=202;
 
 numbers.forEach((num,i)=>{
 
 const angle=(-Math.PI/2)+(2*Math.PI*i/numbers.length);
-
 const x=cx+rx*Math.cos(angle);
-
 const y=cy+ry*Math.sin(angle);
 
 const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
-
 rect.setAttribute("x",x-20);
 rect.setAttribute("y",y-12);
 rect.setAttribute("width",40);
 rect.setAttribute("height",24);
 rect.setAttribute("rx",3);
-
 rect.setAttribute("transform",`rotate(${angle*180/Math.PI+90} ${x} ${y})`);
-
 rect.setAttribute("class","map-section "+(section===num?"selected":""));
-
 rect.addEventListener("click",()=>selectSection(num));
-
 group.appendChild(rect);
 
 const label=document.createElementNS("http://www.w3.org/2000/svg","text");
-
 label.setAttribute("x",x);
 label.setAttribute("y",y+4);
 label.setAttribute("class","map-label");
-
 label.textContent=num;
-
 group.appendChild(label);
 
 });
 
 group.setAttribute("transform",`translate(${300*(1-zoom)} ${255*(1-zoom)}) scale(${zoom})`);
-
 }
 
 function renderSections(){
 
 const root=$("sectionList");
-
 root.innerHTML="";
 
 sectionNumbers().forEach(num=>{
-
 const b=document.createElement("button");
-
 b.type="button";
-
 b.className="section-btn"+(section===num?" selected":"");
-
 b.textContent="Section "+num;
-
 b.onclick=()=>selectSection(num);
-
 root.appendChild(b);
-
 });
 
 $("sectionDescription").textContent=
 `Level ${level} · Sections ${sectionNumbers()[0]}–${sectionNumbers().slice(-1)[0]}`;
-
 }
 
 function changeLevel(n,button){
 
 level=n;
-
 section=null;
 selectedSeats=[];
 currentSeats=[];
-
 $("seatArea").hidden=true;
 
 document.querySelectorAll(".level").forEach(b=>b.classList.remove("active"));
-
 button.classList.add("active");
 
 drawMap();
 renderSections();
 update();
-
 }
 
 function chooseCategory(name,cost,button){
 
 category=name;
 price=cost;
-
 document.querySelectorAll(".price-card").forEach(b=>b.classList.remove("active"));
-
 button.classList.add("active");
-
 update();
-
 }
 
 function selectSection(num){
 
 section=num;
-
 selectedSeats=[];
 currentSeats=[];
-
 $("seatArea").hidden=true;
 
 drawMap();
 renderSections();
 update();
-
 }
 
 function changeQuantity(delta){
@@ -1087,7 +685,6 @@ selectedSeats=selectedSeats.slice(0,quantity);
 
 renderSeatGrid();
 update();
-
 }
 
 async function findSeats(){
@@ -1098,25 +695,17 @@ return;
 }
 
 const button=$("findSeatsButton");
-
 const requestToken=++seatRequestToken;
 
 button.disabled=true;
-
 button.textContent="LOADING AVAILABLE SEATS...";
-
 $("seatArea").hidden=false;
-
 $("seatMessage").textContent="Checking live seat availability...";
-
 $("seatGrid").innerHTML="";
 
 try{
 
-const response=await fetch(
-`${BACKEND_URL}/api/seats/${level}/${section}`
-);
-
+const response=await fetch(`${BACKEND_URL}/api/seats/${level}/${section}`);
 const result=await response.json();
 
 if(requestToken!==seatRequestToken)return;
@@ -1126,9 +715,7 @@ throw new Error(result.message||"Could not load seats.");
 }
 
 currentSeats=result.seats;
-
 selectedSeats=[];
-
 renderSeatGrid();
 
 $("seatMessage").textContent=
@@ -1137,49 +724,33 @@ $("seatMessage").textContent=
 $("seatArea").scrollIntoView({behavior:"smooth",block:"start"});
 
 }catch(error){
-
 $("seatMessage").textContent=error.message;
-
 }finally{
-
 button.disabled=false;
-
 button.textContent="🔎 FIND MY SEATS";
-
 }
-
 }
 
 function renderSeatGrid(){
 
 const grid=$("seatGrid");
-
 grid.innerHTML="";
 
 currentSeats.forEach(seat=>{
 
 const b=document.createElement("button");
-
 b.type="button";
-
 b.className="seat";
-
 b.textContent=seat.number;
 
 const unavailable=seat.status!=="available";
 
 if(unavailable){
-
 b.classList.add("unavailable");
-
 b.disabled=true;
-
 b.title=seat.status;
-
 }else if(selectedSeats.includes(seat.number)){
-
 b.classList.add("selected");
-
 }
 
 b.onclick=()=>{
@@ -1187,99 +758,65 @@ b.onclick=()=>{
 if(unavailable)return;
 
 if(selectedSeats.includes(seat.number)){
-
 selectedSeats=selectedSeats.filter(n=>n!==seat.number);
-
 }else{
-
 if(selectedSeats.length>=quantity){
-
 alert("You have already selected the required number of seats.");
-
 return;
-
 }
-
 selectedSeats.push(seat.number);
-
 }
 
 renderSeatGrid();
-
 update();
-
 };
 
 grid.appendChild(b);
-
 });
-
 }
 
 function continueToCheckout(){
 
 if(!section){
-
 alert("Please choose a stadium section.");
-
 return;
-
 }
 
 if(selectedSeats.length!==quantity){
-
 alert(`Please select exactly ${quantity} available seat(s).`);
-
 return;
-
 }
 
 $("selectedSeatsInput").value=
 selectedSeats.slice().sort((a,b)=>a-b).join(", ");
 
 $("booking").scrollIntoView({behavior:"smooth",block:"start"});
-
 }
 
 function update(){
 
 $("quantityDisplay").textContent=quantity;
-
 $("sumCategory").textContent=category;
-
 $("sumLevel").textContent="Level "+level;
-
 $("sumSection").textContent=section||"Please select a section";
-
 $("sumQuantity").textContent=quantity;
-
 $("sumSeats").textContent=selectedSeats.length;
-
 $("sumTotal").textContent=money(price*quantity);
-
 $("payTotal").textContent=money(price*quantity);
-
 $("categoryInput").value=category+" - "+money(price);
 
 $("selectedSeatsInput").value=
 selectedSeats.slice().sort((a,b)=>a-b).join(", ");
-
 }
 
 function zoomMap(n){
-
 zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
-
 drawMap();
-
 }
 
 function resetMap(){
-
 zoom=1;
-
 drawMap();
-
 }
 
 $("bookingForm").addEventListener("submit",async e=>{
@@ -1287,43 +824,28 @@ $("bookingForm").addEventListener("submit",async e=>{
 e.preventDefault();
 
 if(!section||selectedSeats.length!==quantity){
-
 $("message").textContent="Please select your exact seats before payment.";
-
 $("stadium").scrollIntoView({behavior:"smooth"});
-
 return;
-
 }
 
 const name=$("name").value.trim();
-
 const phone=$("phone").value.trim();
-
 const email=$("email").value.trim();
-
 const method=document.querySelector('input[name="method"]:checked').value;
-
 const message=$("message");
-
 const button=$("payButton");
 
 button.disabled=true;
-
 button.textContent="CONNECTING TO PAYSTACK...";
-
 message.textContent="Preparing your seat reservation...";
 
 try{
 
 const response=await fetch(BACKEND_URL+"/api/payments/initialize",{
-
 method:"POST",
-
 headers:{"Content-Type":"application/json"},
-
 body:JSON.stringify({
-
 name,
 phone,
 email,
@@ -1333,31 +855,22 @@ ticket_type:category,
 stadium_level:level,
 section,
 selected_seats:selectedSeats.slice().sort((a,b)=>a-b)
-
 })
-
 });
 
 const result=await response.json();
 
 if(!response.ok||!result.status||!result.authorization_url){
-
 throw new Error(result.message||"Payment initialization failed.");
-
 }
 
 message.textContent="Reservation ready. Redirecting to secure payment...";
-
 window.location.href=result.authorization_url;
 
 }catch(err){
-
 message.textContent=err.message+" Please try again.";
-
 button.disabled=false;
-
 button.textContent="PAY WITH PAYSTACK";
-
 }
 
 });
