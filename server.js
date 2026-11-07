@@ -8,9 +8,12 @@ const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+
 const EVENT = "Bayern vs Ajax";
 const FRONTEND_URL = "https://www.talantacity.com/";
 const PAYSTACK_URL = "https://api.paystack.co";
+const PAYHERO_URL = "https://backend.payhero.co.ke/api/v2";
+
 const RESERVATION_MINUTES = 15;
 const MAX_QUANTITY = 20;
 const SEATS_PER_SECTION = 60;
@@ -27,6 +30,7 @@ const LEVEL_SECTIONS = {
   3: { first: 401, last: 435 }
 };
 
+// FIREBASE
 const SERVICE_ACCOUNT_PATH =
   process.env.GOOGLE_APPLICATION_CREDENTIALS ||
   "/etc/secrets/serviceAccountKey.json";
@@ -46,6 +50,7 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const Timestamp = admin.firestore.Timestamp;
 
+// CORS
 app.use(cors({
   origin: [
     "https://talantacity.com",
@@ -63,6 +68,7 @@ app.use(express.json({
   }
 }));
 
+// PAYSTACK AUTHENTICATION
 function paymentHeaders() {
   if (!process.env.PAYSTACK_SECRET_KEY) {
     throw new Error("Paystack secret key is missing.");
@@ -74,6 +80,26 @@ function paymentHeaders() {
   };
 }
 
+// PAYHERO AUTHENTICATION
+function payHeroHeaders() {
+  const username = process.env.PAYHERO_API_USERNAME;
+  const password = process.env.PAYHERO_API_PASSWORD;
+
+  if (!username || !password) {
+    throw new Error("PayHero credentials are missing.");
+  }
+
+  const token = Buffer.from(
+    `${username}:${password}`
+  ).toString("base64");
+
+  return {
+    Authorization: `Basic ${token}`,
+    "Content-Type": "application/json"
+  };
+}
+
+// HELPERS
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&": "&amp;",
@@ -95,6 +121,28 @@ function bookingReference() {
 function ticketNumber() {
   return "TSC-" +
     crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
+}
+
+function normalizePhone(phone) {
+  const value = String(phone || "").replace(/[\s-]/g, "");
+
+  if (/^07\d{8}$/.test(value)) {
+    return "254" + value.slice(1);
+  }
+
+  if (/^01\d{8}$/.test(value)) {
+    return "254" + value.slice(1);
+  }
+
+  if (/^\+254[17]\d{8}$/.test(value)) {
+    return value.slice(1);
+  }
+
+  if (/^254[17]\d{8}$/.test(value)) {
+    return value;
+  }
+
+  throw new Error("Enter a valid Kenyan mobile number.");
 }
 
 function validateSeats(level, section, seats, quantity) {
@@ -262,7 +310,9 @@ async function createReservation(details) {
             existing.expiresAt.toMillis() > Date.now()
           )
         ) {
-          throw new Error("One or more selected seats are already taken. Please choose different seats.");
+          throw new Error(
+            "One or more selected seats are already taken. Please choose different seats."
+          );
         }
       }
     }
@@ -315,39 +365,8 @@ async function createReservation(details) {
   });
 }
 
-// VERIFY PAYMENT AND CONFIRM EXACT SEATS
-async function confirmPayment(reference) {
-  const response = await axios.get(
-    `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(reference)}`,
-    { headers: paymentHeaders() }
-  );
-
-  const payment = response.data.data;
-  const meta = payment.metadata || {};
-  const type = TICKET_TYPES[meta.ticket_type];
-
-  if (!type) {
-    throw new Error("Invalid ticket category.");
-  }
-
-  const quantity = Number(meta.quantity);
-  const expectedAmount = type.price * quantity * 100;
-
-  const valid =
-    response.data.status === true &&
-    payment.status === "success" &&
-    payment.reference === reference &&
-    payment.currency === "KES" &&
-    Number(payment.amount) === expectedAmount &&
-    meta.event === EVENT &&
-    Number.isInteger(quantity) &&
-    quantity >= 1 &&
-    quantity <= MAX_QUANTITY;
-
-  if (!valid) {
-    throw new Error("Paystack payment verification failed.");
-  }
-
+// FINALIZE A VERIFIED PAYMENT
+async function finalizeBooking(reference, paymentReference) {
   const bookingRef = db.collection("bookings").doc(reference);
 
   return db.runTransaction(async tx => {
@@ -359,17 +378,10 @@ async function confirmPayment(reference) {
 
     const booking = bookingSnap.data();
 
-    if (booking.status === "paid") {
-      return booking;
-    }
+    if (booking.status === "paid") return booking;
 
-    if (
-      booking.status !== "pending" ||
-      booking.ticketType !== meta.ticket_type ||
-      booking.quantity !== quantity ||
-      booking.amount * 100 !== Number(payment.amount)
-    ) {
-      throw new Error("Booking cannot be confirmed. Contact support before paying again.");
+    if (booking.status !== "pending") {
+      throw new Error("Booking is no longer pending.");
     }
 
     const counterRef = db.collection("inventory")
@@ -394,22 +406,22 @@ async function confirmPayment(reference) {
         snap.data().reference !== reference ||
         snap.data().status !== "pending"
       ) {
-        throw new Error("One or more seat reservations are no longer valid. Contact support.");
+        throw new Error("One or more seat reservations are no longer valid.");
       }
     }
 
     const now = Timestamp.now();
 
     tx.set(counterRef, {
-      sold: (counter.sold || 0) + quantity,
-      held: Math.max(0, (counter.held || 0) - quantity)
+      sold: (counter.sold || 0) + booking.quantity,
+      held: Math.max(0, (counter.held || 0) - booking.quantity)
     });
 
     seatSnaps.forEach((snap, index) => {
       tx.update(seatRefs[index], {
         status: "paid",
         paidAt: now,
-        paymentReference: reference
+        paymentReference
       });
     });
 
@@ -418,7 +430,7 @@ async function confirmPayment(reference) {
       status: "paid",
       paymentStatus: "success",
       ticketNumber: ticketNumber(),
-      paymentReference: reference,
+      paymentReference,
       paidAt: now
     };
 
@@ -426,6 +438,83 @@ async function confirmPayment(reference) {
 
     return confirmed;
   });
+}
+
+// VERIFY PAYSTACK PAYMENT
+async function confirmPayment(reference) {
+  const response = await axios.get(
+    `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(reference)}`,
+    { headers: paymentHeaders() }
+  );
+
+  const payment = response.data.data;
+  const meta = payment.metadata || {};
+
+  const bookingSnap = await db.collection("bookings")
+    .doc(reference).get();
+
+  if (!bookingSnap.exists) {
+    throw new Error("Booking record not found.");
+  }
+
+  const booking = bookingSnap.data();
+
+  if (
+    booking.paymentMethod !== "card" ||
+    response.data.status !== true ||
+    payment.status !== "success" ||
+    payment.reference !== reference ||
+    payment.currency !== "KES" ||
+    Number(payment.amount) !== booking.amount * 100 ||
+    meta.event !== EVENT
+  ) {
+    throw new Error("Paystack payment verification failed.");
+  }
+
+  return finalizeBooking(reference, reference);
+}
+
+// VERIFY PAYHERO PAYMENT WITH PAYHERO STATUS API
+async function confirmPayHero(reference) {
+  const bookingRef = db.collection("bookings").doc(reference);
+  const bookingSnap = await bookingRef.get();
+
+  if (!bookingSnap.exists) {
+    throw new Error("PayHero booking not found.");
+  }
+
+  const booking = bookingSnap.data();
+
+  if (booking.status === "paid") return booking;
+
+  if (
+    booking.paymentMethod !== "mobile_money" ||
+    !booking.payheroReference
+  ) {
+    throw new Error("Invalid PayHero booking.");
+  }
+
+  const response = await axios.get(
+    `${PAYHERO_URL}/transaction-status`,
+    {
+      params: {
+        reference: booking.payheroReference
+      },
+      headers: payHeroHeaders()
+    }
+  );
+
+  const payment = response.data;
+
+  if (
+    payment.success !== true ||
+    String(payment.status).toUpperCase() !== "SUCCESS" ||
+    payment.reference !== booking.payheroReference
+  ) {
+    throw new Error("PayHero has not confirmed this payment.");
+  }
+
+  return finalizeBooking(reference, booking.payheroReference);
 }
 
 // HOME
@@ -437,12 +526,13 @@ app.get("/", (req, res) => {
     capacity: 70000,
     categories: TICKET_TYPES,
     currency: "KES",
+    paymentMethods: ["PayHero M-Pesa", "Paystack Card"],
     manualSeatSelection: true,
     seatsPerSection: SEATS_PER_SECTION
   });
 });
 
-// GET SECTION SEAT AVAILABILITY
+// SEAT AVAILABILITY
 app.get("/api/seats/:level/:section", async (req, res) => {
   try {
     const level = Number(req.params.level);
@@ -497,6 +587,7 @@ app.get("/api/seats/:level/:section", async (req, res) => {
 
   } catch (error) {
     console.error("Seat availability error:", error.message);
+
     res.status(500).json({
       status: false,
       message: "Unable to retrieve seat availability."
@@ -504,7 +595,7 @@ app.get("/api/seats/:level/:section", async (req, res) => {
   }
 });
 
-// TICKET CATEGORY AVAILABILITY
+// TICKET AVAILABILITY
 app.get("/api/tickets/availability", async (req, res) => {
   try {
     await releaseExpiredReservations();
@@ -513,6 +604,7 @@ app.get("/api/tickets/availability", async (req, res) => {
 
     for (const [name, type] of Object.entries(TICKET_TYPES)) {
       const snap = await db.collection("inventory").doc(name).get();
+
       const data = snap.exists ? snap.data() : {
         sold: 0,
         held: 0
@@ -534,6 +626,7 @@ app.get("/api/tickets/availability", async (req, res) => {
 
   } catch (error) {
     console.error("Availability error:", error.message);
+
     res.status(500).json({
       status: false,
       message: "Unable to retrieve ticket availability."
@@ -560,13 +653,10 @@ app.post("/api/payments/initialize", async (req, res) => {
 
     const ticketType = String(ticket_type || "");
     const type = TICKET_TYPES[ticketType];
-    const method = String(payment_method || "mobile_money").toLowerCase();
+    const method = String(payment_method || "").toLowerCase();
 
     if (!type) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid ticket category."
-      });
+      throw new Error("Invalid ticket category.");
     }
 
     if (
@@ -576,24 +666,19 @@ app.post("/api/payments/initialize", async (req, res) => {
       typeof email !== "string" ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       typeof phone !== "string" ||
-      !phone.trim() ||
       phone.length > 20
     ) {
-      return res.status(400).json({
-        status: false,
-        message: "Please enter valid customer details."
-      });
+      throw new Error("Please enter valid customer details.");
     }
+
+    const mobileNumber = normalizePhone(phone);
 
     if (
       !Number.isInteger(quantity) ||
       quantity < 1 ||
       quantity > MAX_QUANTITY
     ) {
-      return res.status(400).json({
-        status: false,
-        message: `Choose between 1 and ${MAX_QUANTITY} tickets.`
-      });
+      throw new Error(`Choose between 1 and ${MAX_QUANTITY} tickets.`);
     }
 
     const level = Number(stadium_level);
@@ -606,46 +691,62 @@ app.post("/api/payments/initialize", async (req, res) => {
       quantity
     );
 
-    let channel;
+    const isCard = ["card", "bank_card"].includes(method);
+    const isMobile = [
+      "mobile_money",
+      "mpesa",
+      "m-pesa"
+    ].includes(method);
 
-    if (["card", "bank_card"].includes(method)) {
-      channel = "card";
-    } else if (
-      ["mobile_money", "mpesa", "m-pesa"].includes(method)
-    ) {
-      channel = "mobile_money";
-    } else {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid payment method."
-      });
+    if (!isCard && !isMobile) {
+      throw new Error("Choose M-Pesa or bank card.");
     }
 
-    if (!process.env.PAYSTACK_SECRET_KEY) {
-      return res.status(503).json({
-        status: false,
-        message: "Payment service is not configured."
-      });
+    if (isCard && !process.env.PAYSTACK_SECRET_KEY) {
+      throw new Error("Paystack is not configured.");
+    }
+
+    if (
+      isMobile &&
+      (
+        !process.env.PAYHERO_API_USERNAME ||
+        !process.env.PAYHERO_API_PASSWORD ||
+        !process.env.PAYHERO_CHANNEL_ID
+      )
+    ) {
+      throw new Error("PayHero is not configured.");
+    }
+
+    const channelId = Number(process.env.PAYHERO_CHANNEL_ID);
+
+    if (
+      isMobile &&
+      (!Number.isInteger(channelId) || channelId <= 0)
+    ) {
+      throw new Error("Invalid PayHero channel ID.");
     }
 
     await releaseExpiredReservations();
 
     reference = bookingReference();
 
-    const reservation = await createReservation({
+    await createReservation({
       reference,
       name: name.trim(),
       email: email.trim(),
-      phone: phone.trim(),
+      phone: mobileNumber,
       quantity,
       ticketType,
-      paymentMethod: channel,
+      paymentMethod: isCard ? "card" : "mobile_money",
       level,
       section: selectedSection,
       seats
     });
 
-    try {
+    const amount = type.price * quantity;
+
+    // PAYSTACK: CARDS ONLY
+    if (isCard) {
       const callback =
         process.env.CALLBACK_URL ||
         "https://talanta-sport-city-backend.onrender.com/api/payments/verify";
@@ -654,15 +755,15 @@ app.post("/api/payments/initialize", async (req, res) => {
         `${PAYSTACK_URL}/transaction/initialize`,
         {
           email: email.trim(),
-          amount: type.price * quantity * 100,
+          amount: amount * 100,
           currency: "KES",
           reference,
           callback_url: callback,
-          channels: [channel],
+          channels: ["card"],
           metadata: {
             event: EVENT,
             customer_name: name.trim(),
-            phone: phone.trim(),
+            phone: mobileNumber,
             quantity,
             ticket_type: ticketType,
             unit_price: type.price,
@@ -675,28 +776,63 @@ app.post("/api/payments/initialize", async (req, res) => {
       );
 
       if (
-        !response.data.status ||
+        response.data.status !== true ||
         !response.data.data.authorization_url
       ) {
         throw new Error("Paystack initialization failed.");
       }
 
-      res.json({
+      return res.json({
         status: true,
+        provider: "paystack",
         authorization_url: response.data.data.authorization_url,
         reference,
-        level,
-        section: selectedSection,
-        seats,
-        expires_in_minutes: RESERVATION_MINUTES,
-        amount: type.price * quantity,
+        amount,
         currency: "KES"
       });
-
-    } catch (error) {
-      await releaseBooking(reference);
-      throw error;
     }
+
+    // PAYHERO: M-PESA ONLY
+    const callbackUrl =
+      "https://talanta-sport-city-backend.onrender.com/api/payhero/callback";
+
+    const response = await axios.post(
+      `${PAYHERO_URL}/payments`,
+      {
+        amount,
+        phone_number: mobileNumber,
+        channel_id: channelId,
+        provider: "m-pesa",
+        external_reference: reference,
+        customer_name: name.trim(),
+        callback_url: callbackUrl
+      },
+      { headers: payHeroHeaders() }
+    );
+
+    if (
+      response.data.success !== true ||
+      !response.data.reference
+    ) {
+      throw new Error("PayHero could not initiate the M-Pesa payment.");
+    }
+
+    await db.collection("bookings").doc(reference).update({
+      payheroReference: response.data.reference,
+      paymentProvider: "payhero",
+      payheroCheckoutRequestID:
+        response.data.CheckoutRequestID || null,
+      paymentInitiatedAt: Timestamp.now()
+    });
+
+    return res.json({
+      status: true,
+      provider: "payhero",
+      message: "M-Pesa prompt sent. Enter your M-Pesa PIN.",
+      reference,
+      amount,
+      currency: "KES"
+    });
 
   } catch (error) {
     console.error(
@@ -704,14 +840,25 @@ app.post("/api/payments/initialize", async (req, res) => {
       error.response?.data || error.message
     );
 
-    res.status(400).json({
+    if (reference) {
+      try {
+        await releaseBooking(reference);
+      } catch (releaseError) {
+        console.error("Reservation release error:", releaseError.message);
+      }
+    }
+
+    return res.status(400).json({
       status: false,
-      message: error.message || "Unable to start payment."
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Unable to start payment."
     });
   }
 });
 
-// PAYMENT VERIFICATION CALLBACK
+// PAYSTACK RETURN / VERIFICATION
 app.get("/api/payments/verify", async (req, res) => {
   try {
     const reference = String(req.query.reference || "");
@@ -721,8 +868,11 @@ app.get("/api/payments/verify", async (req, res) => {
     }
 
     const booking = await confirmPayment(reference);
+
     const seats = (booking.seats || [])
-      .map(seat => `Section ${booking.section}, Seat ${seat.number}`)
+      .map(seat =>
+        `Section ${booking.section}, Seat ${seat.number}`
+      )
       .map(escapeHTML)
       .join("<br>");
 
@@ -770,7 +920,7 @@ app.get("/api/payments/verify", async (req, res) => {
           <h1>✓ Payment Successful!</h1>
           <h2>TALANTA SPORT CITY</h2>
           <h3>${escapeHTML(EVENT)}</h3>
-          <p>Talanta Stadium, Nairobi</p>
+          <p>Raila Odinga International Stadium, Nairobi</p>
           <hr>
           <p>Customer: ${escapeHTML(booking.customerName)}</p>
           <p>Ticket category: ${escapeHTML(booking.ticketType)}</p>
@@ -780,8 +930,10 @@ app.get("/api/payments/verify", async (req, res) => {
           <p>Seats:<br>${seats}</p>
           <h2>KSh ${money(booking.amount)}</h2>
           <p>Ticket number:</p>
-          <div class="ref"><strong>${escapeHTML(booking.ticketNumber)}</strong></div>
-          <p>Payment reference: ${escapeHTML(reference)}</p>
+          <div class="ref">
+            <strong>${escapeHTML(booking.ticketNumber)}</strong>
+          </div>
+          <p>Payment reference: ${escapeHTML(booking.paymentReference)}</p>
           <p>Keep your ticket details for entry.</p>
           <a href="${escapeHTML(FRONTEND_URL)}">Return to website</a>
         </div>
@@ -790,13 +942,125 @@ app.get("/api/payments/verify", async (req, res) => {
     `);
 
   } catch (error) {
-    console.error("Verification error:", error.response?.data || error.message);
+    console.error(
+      "Paystack verification error:",
+      error.response?.data || error.message
+    );
 
     res.status(400).send(`
       <h2>Payment not confirmed</h2>
       <p>${escapeHTML(error.message)}</p>
       <p>If you have paid, contact Talanta Sport City before paying again.</p>
     `);
+  }
+});
+
+// PAYHERO CALLBACK
+app.post("/api/payhero/callback", async (req, res) => {
+  try {
+    const callback = req.body.response || {};
+    const reference = String(callback.ExternalReference || "");
+
+    if (!/^TSC-[a-f0-9-]{36}$/i.test(reference)) {
+      return res.sendStatus(400);
+    }
+
+    const bookingSnap = await db.collection("bookings")
+      .doc(reference).get();
+
+    if (!bookingSnap.exists) {
+      return res.sendStatus(404);
+    }
+
+    const booking = bookingSnap.data();
+
+    if (booking.status === "paid") {
+      return res.sendStatus(200);
+    }
+
+    if (
+      booking.paymentMethod !== "mobile_money" ||
+      !booking.payheroReference
+    ) {
+      return res.sendStatus(400);
+    }
+
+    // Do not trust callback alone.
+    // Check transaction directly with PayHero.
+    if (
+      String(callback.Status || "").toLowerCase() !== "success" ||
+      Number(callback.ResultCode) !== 0 ||
+      Number(callback.Amount) !== booking.amount
+    ) {
+      console.log("PayHero payment not successful:", reference);
+      return res.sendStatus(200);
+    }
+
+    await confirmPayHero(reference);
+
+    console.log("PayHero booking confirmed:", reference);
+
+    return res.sendStatus(200);
+
+  } catch (error) {
+    console.error("PayHero callback error:", error.response?.data || error.message);
+    return res.sendStatus(500);
+  }
+});
+
+// CHECK PAYMENT STATUS FOR WEBSITE
+app.get("/api/payments/status/:reference", async (req, res) => {
+  try {
+    const reference = String(req.params.reference || "");
+
+    if (!/^TSC-[a-f0-9-]{36}$/i.test(reference)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid booking reference."
+      });
+    }
+
+    const snap = await db.collection("bookings")
+      .doc(reference).get();
+
+    if (!snap.exists) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found."
+      });
+    }
+
+    let booking = snap.data();
+
+    if (
+      booking.status === "pending" &&
+      booking.paymentMethod === "mobile_money" &&
+      booking.payheroReference
+    ) {
+      try {
+        await confirmPayHero(reference);
+        const refreshed = await snap.ref.get();
+        booking = refreshed.data();
+      } catch (error) {
+        // Still pending; never mark unpaid booking as successful.
+        console.log("PayHero status check:", error.message);
+      }
+    }
+
+    return res.json({
+      status: true,
+      paymentStatus: booking.paymentStatus,
+      bookingStatus: booking.status,
+      ticketNumber: booking.ticketNumber || null
+    });
+
+  } catch (error) {
+    console.error("Payment status error:", error.message);
+
+    res.status(500).json({
+      status: false,
+      message: "Unable to check payment status."
+    });
   }
 });
 
@@ -830,18 +1094,25 @@ app.post("/api/payments/webhook", async (req, res) => {
 
     if (req.body.event === "charge.success") {
       const reference = req.body.data.reference;
+
       await confirmPayment(reference);
-      console.log("Confirmed payment:", reference);
+
+      console.log("Paystack payment confirmed:", reference);
     }
 
-    res.sendStatus(200);
+    return res.sendStatus(200);
 
   } catch (error) {
-    console.error("Webhook error:", error.response?.data || error.message);
-    res.sendStatus(500);
+    console.error(
+      "Paystack webhook error:",
+      error.response?.data || error.message
+    );
+
+    return res.sendStatus(500);
   }
 });
 
+// SERVER
 app.listen(PORT, () => {
   console.log(`Talanta Sport City running on port ${PORT}`);
 });
