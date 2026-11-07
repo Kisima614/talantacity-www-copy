@@ -81,20 +81,21 @@ function paymentHeaders() {
 }
 
 // PAYHERO AUTHENTICATION
+// Uses the complete Basic Authorization value supplied by PayHero.
 function payHeroHeaders() {
-  const username = process.env.PAYHERO_API_USERNAME;
-  const password = process.env.PAYHERO_API_PASSWORD;
+  const authorization = process.env.PAYHERO_AUTHORIZATION;
 
-  if (!username || !password) {
-    throw new Error("PayHero credentials are missing.");
+  if (
+    !authorization ||
+    !/^Basic\s+\S+$/i.test(authorization.trim())
+  ) {
+    throw new Error(
+      "PAYHERO_AUTHORIZATION is missing or invalid."
+    );
   }
 
-  const token = Buffer.from(
-    `${username}:${password}`
-  ).toString("base64");
-
   return {
-    Authorization: `Basic ${token}`,
+    Authorization: authorization.trim(),
     "Content-Type": "application/json"
   };
 }
@@ -474,7 +475,7 @@ async function confirmPayment(reference) {
   return finalizeBooking(reference, reference);
 }
 
-// VERIFY PAYHERO PAYMENT WITH PAYHERO STATUS API
+// VERIFY PAYHERO PAYMENT
 async function confirmPayHero(reference) {
   const bookingRef = db.collection("bookings").doc(reference);
   const bookingSnap = await bookingRef.get();
@@ -706,11 +707,11 @@ app.post("/api/payments/initialize", async (req, res) => {
       throw new Error("Paystack is not configured.");
     }
 
+    // CHECK PAYHERO AUTHORIZATION AND CHANNEL
     if (
       isMobile &&
       (
-        !process.env.PAYHERO_API_USERNAME ||
-        !process.env.PAYHERO_API_PASSWORD ||
+        !process.env.PAYHERO_AUTHORIZATION ||
         !process.env.PAYHERO_CHANNEL_ID
       )
     ) {
@@ -985,8 +986,8 @@ app.post("/api/payhero/callback", async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // Do not trust callback alone.
-    // Check transaction directly with PayHero.
+    // Callback is not treated as payment proof.
+    // Verify the transaction directly with PayHero.
     if (
       String(callback.Status || "").toLowerCase() !== "success" ||
       Number(callback.ResultCode) !== 0 ||
@@ -1003,7 +1004,11 @@ app.post("/api/payhero/callback", async (req, res) => {
     return res.sendStatus(200);
 
   } catch (error) {
-    console.error("PayHero callback error:", error.response?.data || error.message);
+    console.error(
+      "PayHero callback error:",
+      error.response?.data || error.message
+    );
+
     return res.sendStatus(500);
   }
 });
@@ -1042,7 +1047,6 @@ app.get("/api/payments/status/:reference", async (req, res) => {
         const refreshed = await snap.ref.get();
         booking = refreshed.data();
       } catch (error) {
-        // Still pending; never mark unpaid booking as successful.
         console.log("PayHero status check:", error.message);
       }
     }
