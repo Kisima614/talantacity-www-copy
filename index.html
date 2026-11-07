@@ -8,7 +8,6 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-
 html{scroll-behavior:smooth}
 
 body{
@@ -18,7 +17,7 @@ color:#18202c;
 }
 
 header{
-background:rgba(8,13,25,.96);
+background:rgba(8,13,25,.97);
 color:white;
 padding:18px 5%;
 display:flex;
@@ -60,27 +59,86 @@ border-radius:12px;
 overflow:hidden;
 }
 
+/* SELF-CONTAINED SUNSET STADIUM BACKGROUND */
 .banner{
+position:relative;
+isolation:isolate;
+overflow:hidden;
 background:
 linear-gradient(
 180deg,
-rgba(5,8,18,.48),
-rgba(5,8,18,.15) 45%,
-rgba(5,8,18,.65)
+rgba(12,13,32,.15) 0%,
+rgba(12,13,32,.05) 40%,
+rgba(5,12,25,.65) 100%
 ),
-url("talanta-stadium-bg.jpg");
-
-background-size:cover;
-background-position:center;
-background-repeat:no-repeat;
-
+linear-gradient(
+180deg,
+#352c55 0%,
+#8c4660 23%,
+#e47a51 48%,
+#f4ae64 62%,
+#34344b 78%,
+#111c2b 100%
+);
 color:white;
 text-align:left;
 padding:65px 30px;
-min-height:620px;
+min-height:650px;
 display:flex;
 flex-direction:column;
 justify-content:center;
+}
+
+.banner:before{
+content:"";
+position:absolute;
+z-index:-1;
+inset:0;
+background:
+radial-gradient(ellipse at 50% 53%,
+rgba(255,193,112,.85) 0%,
+rgba(244,132,92,.45) 22%,
+transparent 58%),
+linear-gradient(180deg,
+transparent 0%,
+rgba(17,24,42,.05) 55%,
+rgba(5,13,26,.65) 100%);
+}
+
+.banner:after{
+content:"";
+position:absolute;
+z-index:-1;
+bottom:0;
+left:0;
+width:100%;
+height:34%;
+background:
+radial-gradient(circle at 12% 35%,#ffe5a2 0 2px,transparent 4px),
+radial-gradient(circle at 25% 20%,#ffe5a2 0 2px,transparent 4px),
+radial-gradient(circle at 45% 27%,#ffe5a2 0 2px,transparent 4px),
+radial-gradient(circle at 66% 22%,#ffe5a2 0 2px,transparent 4px),
+radial-gradient(circle at 83% 32%,#ffe5a2 0 2px,transparent 4px),
+linear-gradient(175deg,
+transparent 0 25%,
+#182b35 26% 34%,
+#0c1c2b 35% 100%);
+clip-path:polygon(
+0 35%,8% 30%,15% 36%,22% 22%,30% 30%,
+38% 12%,46% 25%,54% 15%,62% 30%,
+70% 17%,78% 28%,86% 12%,94% 29%,
+100% 20%,100% 100%,0 100%);
+}
+
+/* Stadium illustration */
+.stadium-art{
+position:absolute;
+z-index:-1;
+bottom:0;
+left:0;
+width:100%;
+height:40%;
+pointer-events:none;
 }
 
 .banner h1{
@@ -89,6 +147,7 @@ margin:20px 0;
 line-height:1;
 font-weight:900;
 text-transform:uppercase;
+text-shadow:0 3px 15px rgba(0,0,0,.5);
 }
 
 .banner span{color:#ffc329}
@@ -101,6 +160,7 @@ margin-bottom:8px;
 .banner p{
 font-size:18px;
 line-height:1.8;
+text-shadow:0 2px 8px rgba(0,0,0,.6);
 }
 
 .banner .event-time{
@@ -140,7 +200,6 @@ box-shadow:0 5px 20px rgba(0,0,0,.15);
 }
 
 .panel-inner{padding:18px}
-
 h2{font-size:23px}
 
 .muted{
@@ -302,7 +361,6 @@ transition:.2s;
 }
 
 .green-btn:hover{background:#056735}
-
 .green-btn:disabled{opacity:.5}
 
 .section-grid{
@@ -458,7 +516,6 @@ margin:5px;
 .banner{
 min-height:590px;
 padding:45px 18px;
-background-position:center;
 }
 
 .banner h1{
@@ -499,13 +556,7 @@ font-size:12px;
 }
 
 .price-card{min-width:145px}
-
 .payment{grid-template-columns:1fr}
-
-}
-
-@media(min-width:701px){
-.banner{background-position:center 55%}
 }
 </style>
 </head>
@@ -540,6 +591,67 @@ font-size:12px;
 <p class="event-time">
 Tue 5 Jan 2027 · Starts at 8:00 PM EAT
 </p>
+
+<!-- Stadium illustration -->
+<svg class="stadium-art" viewBox="0 0 1200 400"
+preserveAspectRatio="xMidYMax slice"
+xmlns="http://www.w3.org/2000/svg">
+
+<defs>
+<linearGradient id="stadiumGlow" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#ffcf8a"/>
+<stop offset="1" stop-color="#d65d42"/>
+</linearGradient>
+<linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#596477"/>
+<stop offset="1" stop-color="#111d30"/>
+</linearGradient>
+</defs>
+
+<ellipse cx="600" cy="350" rx="560" ry="160"
+fill="#111c2b"/>
+
+<path d="M70 250 Q600 -40 1130 250
+L1080 335 Q600 105 120 335Z"
+fill="url(#roof)" stroke="#f5b77d" stroke-width="5"/>
+
+<path d="M120 285 Q600 80 1080 285
+L1050 360 Q600 180 150 360Z"
+fill="#26374a" stroke="#f4bd83" stroke-width="4"/>
+
+<path d="M175 300 Q600 140 1025 300"
+fill="none" stroke="#ffdcaa" stroke-width="7"/>
+
+<path d="M200 320 Q600 170 1000 320"
+fill="none" stroke="#e88d59" stroke-width="5"/>
+
+<g fill="#ffe5b4">
+<circle cx="160" cy="245" r="7"/>
+<circle cx="280" cy="207" r="7"/>
+<circle cx="420" cy="181" r="7"/>
+<circle cx="600" cy="170" r="8"/>
+<circle cx="780" cy="181" r="7"/>
+<circle cx="920" cy="207" r="7"/>
+<circle cx="1040" cy="245" r="7"/>
+</g>
+
+<path d="M250 300 Q600 225 950 300
+L900 400 H300Z" fill="#172b32"/>
+
+<path d="M350 310 Q600 270 850 310
+L810 390 H390Z" fill="#80a77c"/>
+
+<path d="M600 310V390 M390 350H810"
+stroke="#e8e9d0" stroke-width="3" fill="none"/>
+
+<g fill="#ffe6ae">
+<circle cx="95" cy="320" r="4"/>
+<circle cx="130" cy="340" r="4"/>
+<circle cx="1090" cy="320" r="4"/>
+<circle cx="1060" cy="340" r="4"/>
+</g>
+
+</svg>
 
 </div>
 
