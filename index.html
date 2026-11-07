@@ -300,7 +300,7 @@ TALANTA
 
 <label>Payment method</label>
 <div class="payment">
-<label><input type="radio" name="method" value="mobile_money" checked> M-Pesa (PayHero)</label>
+<label><input type="radio" name="method" value="mobile_money" checked> M-Pesa (Paystack)</label>
 <label><input type="radio" name="method" value="card"> Bank Card (Paystack)</label>
 </div>
 
@@ -535,6 +535,7 @@ function update(){
  $("payButton").textContent=method&&method.value==="card"?"PAY WITH PAYSTACK":"PAY WITH M-PESA";
 }
 
+/* Stadium map controls */
 function zoomMap(n){
  zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
  drawMap();
@@ -545,7 +546,7 @@ function resetMap(){
  drawMap();
 }
 
-/* Payment status polling for PayHero M-Pesa */
+/* Paystack M-Pesa payment status polling */
 async function checkMpesaPayment(reference){
  const message=$("message");
  const button=$("payButton");
@@ -611,7 +612,7 @@ async function checkMpesaPayment(reference){
    throw new Error(result.message||"Payment was not completed. Please try again.");
   }
 
-  message.textContent="M-Pesa request sent. Please enter your M-Pesa PIN on your phone. Waiting for payment confirmation...";
+  message.textContent="Paystack M-Pesa request is being processed. Check your phone and follow the payment instructions. Waiting for confirmation...";
   message.className="pending-message";
  }
 
@@ -636,7 +637,7 @@ $("bookingForm").addEventListener("submit",async e=>{
  const button=$("payButton");
 
  button.disabled=true;
- button.textContent=method==="card"?"CONNECTING TO PAYSTACK...":"CONNECTING TO PAYHERO...";
+ button.textContent=method==="card"?"CONNECTING TO PAYSTACK...":"CONNECTING TO PAYSTACK M-PESA...";
  message.className="pending-message";
  message.textContent="Preparing your seat reservation...";
 
@@ -663,7 +664,7 @@ $("bookingForm").addEventListener("submit",async e=>{
    throw new Error(result.message||"Payment initialization failed.");
   }
 
-  /* Card payment: redirect to Paystack */
+  /* Card payment: redirect to Paystack checkout */
   if(method==="card"){
    const paymentUrl=result.authorization_url||result.checkout_url||result.payment_url;
 
@@ -676,17 +677,17 @@ $("bookingForm").addEventListener("submit",async e=>{
    return;
   }
 
-  /* M-Pesa payment: PayHero sends a prompt to the customer's phone */
+  /* M-Pesa payment: use the booking reference for status checks */
   const reference=
    result.reference||
    result.booking_reference||
    result.external_reference;
 
   if(!reference){
-   throw new Error("PayHero did not return a booking reference. Please contact support before retrying.");
+   throw new Error("Paystack did not return a booking reference. Please contact support before retrying.");
   }
 
-  message.textContent="M-Pesa payment request sent. Check your phone and enter your M-Pesa PIN. Do not close this page.";
+  message.textContent="Paystack M-Pesa request submitted. Check your phone and follow the payment instructions. Do not close this page.";
   message.className="pending-message";
   button.textContent="WAITING FOR M-PESA...";
 
