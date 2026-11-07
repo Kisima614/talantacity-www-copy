@@ -106,23 +106,27 @@ function ticketNumber() {
 function normalizePhone(phone) {
   const value = String(phone || "").replace(/[\s-]/g, "");
 
-  if (/^07\d{8}$/.test(value)) {
-    return "254" + value.slice(1);
-  }
-
-  if (/^01\d{8}$/.test(value)) {
-    return "254" + value.slice(1);
+  if (/^07\d{8}$/.test(value) || /^01\d{8}$/.test(value)) {
+    return "+254" + value.slice(1);
   }
 
   if (/^\+254[17]\d{8}$/.test(value)) {
-    return value.slice(1);
-  }
-
-  if (/^254[17]\d{8}$/.test(value)) {
     return value;
   }
 
+  if (/^254[17]\d{8}$/.test(value)) {
+    return "+" + value;
+  }
+
   throw new Error("Enter a valid Kenyan mobile number.");
+}
+
+function validReference(reference) {
+  return /^TSC-[a-f0-9-]{36}$/i.test(reference);
+}
+
+function seatDocument(seatId) {
+  return db.collection("stadiumSeats").doc(seatId);
 }
 
 function validateSeats(level, section, seats, quantity) {
@@ -157,10 +161,6 @@ function validateSeats(level, section, seats, quantity) {
     number: seat,
     id: `L${level}-S${section}-N${String(seat).padStart(2, "0")}`
   }));
-}
-
-function seatDocument(seatId) {
-  return db.collection("stadiumSeats").doc(seatId);
 }
 
 // RELEASE ONE EXPIRED BOOKING
@@ -246,7 +246,6 @@ async function createReservation(details) {
   } = details;
 
   const type = TICKET_TYPES[ticketType];
-
   const bookingRef = db.collection("bookings").doc(reference);
   const counterRef = db.collection("inventory").doc(ticketType);
 
@@ -258,10 +257,9 @@ async function createReservation(details) {
     }
 
     const counterSnap = await tx.get(counterRef);
-    const counter = counterSnap.exists ? counterSnap.data() : {
-      sold: 0,
-      held: 0
-    };
+    const counter = counterSnap.exists
+      ? counterSnap.data()
+      : { sold: 0, held: 0 };
 
     if (
       (counter.sold || 0) +
@@ -457,7 +455,7 @@ async function confirmCardPayment(reference) {
   return finalizeBooking(reference, reference);
 }
 
-// VERIFY PAYSTACK M-PESA PAYMENT
+// VERIFY PAYSTACK M-PESA CHARGE
 async function confirmMpesaPayment(reference) {
   const bookingRef = db.collection("bookings").doc(reference);
   const bookingSnap = await bookingRef.get();
@@ -478,7 +476,7 @@ async function confirmMpesaPayment(reference) {
   }
 
   const response = await axios.get(
-    `${PAYSTACK_URL}/transaction/verify/${encodeURIComponent(
+    `${PAYSTACK_URL}/charge/${encodeURIComponent(
       booking.paystackReference
     )}`,
     { headers: paymentHeaders() }
@@ -488,12 +486,15 @@ async function confirmMpesaPayment(reference) {
 
   if (
     response.data.status !== true ||
+    !payment ||
     payment.status !== "success" ||
     payment.reference !== booking.paystackReference ||
     payment.currency !== "KES" ||
     Number(payment.amount) !== booking.amount * 100
   ) {
-    throw new Error("Paystack has not confirmed this M-Pesa payment.");
+    throw new Error(
+      payment?.message || "Paystack has not confirmed this M-Pesa payment."
+    );
   }
 
   return finalizeBooking(reference, booking.paystackReference);
@@ -587,10 +588,9 @@ app.get("/api/tickets/availability", async (req, res) => {
     for (const [name, type] of Object.entries(TICKET_TYPES)) {
       const snap = await db.collection("inventory").doc(name).get();
 
-      const data = snap.exists ? snap.data() : {
-        sold: 0,
-        held: 0
-      };
+      const data = snap.exists
+        ? snap.data()
+        : { sold: 0, held: 0 };
 
       result[name] = {
         capacity: type.capacity,
@@ -620,6 +620,7 @@ app.get("/api/tickets/availability", async (req, res) => {
 app.post("/api/payments/initialize", async (req, res) => {
   let reference;
   let reservationCreated = false;
+  let chargeAccepted = false;
 
   try {
     const {
@@ -748,6 +749,13 @@ app.post("/api/payments/initialize", async (req, res) => {
         throw new Error("Paystack card initialization failed.");
       }
 
+      chargeAccepted = true;
+
+      await db.collection("bookings").doc(reference).update({
+        paymentProvider: "paystack",
+        paymentInitiatedAt: Timestamp.now()
+      });
+
       return res.json({
         status: true,
         provider: "paystack",
@@ -796,13 +804,18 @@ app.post("/api/payments/initialize", async (req, res) => {
       );
     }
 
-    const paystackReference = response.data.data.reference;
+    const charge = response.data.data;
+    const paystackReference = charge.reference;
+
+    // Paystack has accepted the charge request.
+    chargeAccepted = true;
 
     await db.collection("bookings").doc(reference).update({
       paystackReference,
       paymentProvider: "paystack",
       paymentInitiatedAt: Timestamp.now(),
-      paystackChargeStatus: response.data.data.status || "pending"
+      paystackChargeStatus: charge.status || "pending",
+      paystackDisplayText: charge.display_text || null
     });
 
     return res.json({
@@ -810,11 +823,10 @@ app.post("/api/payments/initialize", async (req, res) => {
       provider: "paystack",
       payment_method: "mobile_money",
       message:
-        response.data.data.display_text ||
-        response.data.message ||
+        charge.display_text ||
         "Check your phone and complete the M-Pesa payment prompt.",
       display_text:
-        response.data.data.display_text ||
+        charge.display_text ||
         "Check your phone and complete the M-Pesa payment prompt.",
       reference,
       amount,
@@ -827,9 +839,9 @@ app.post("/api/payments/initialize", async (req, res) => {
       error.response?.data || error.message
     );
 
-    if (reference && reservationCreated) {
+    // Do not release seats if Paystack already accepted the charge.
+    if (reference && reservationCreated && !chargeAccepted) {
       try {
-        // Only release when the payment request was rejected.
         await releaseBooking(reference);
       } catch (releaseError) {
         console.error("Reservation release error:", releaseError.message);
@@ -842,7 +854,8 @@ app.post("/api/payments/initialize", async (req, res) => {
         error.response?.data?.message ||
         error.response?.data?.data?.message ||
         error.message ||
-        "Unable to start payment."
+        "Unable to start payment.",
+      reference: chargeAccepted ? reference : undefined
     });
   }
 });
@@ -852,7 +865,7 @@ app.get("/api/payments/verify", async (req, res) => {
   try {
     const reference = String(req.query.reference || "");
 
-    if (!/^TSC-[a-f0-9-]{36}$/i.test(reference)) {
+    if (!validReference(reference)) {
       return res.status(400).send("Invalid booking reference.");
     }
 
@@ -949,7 +962,7 @@ app.get("/api/payments/status/:reference", async (req, res) => {
   try {
     const reference = String(req.params.reference || "");
 
-    if (!/^TSC-[a-f0-9-]{36}$/i.test(reference)) {
+    if (!validReference(reference)) {
       return res.status(400).json({
         status: false,
         message: "Invalid booking reference."
@@ -1037,19 +1050,19 @@ app.post("/api/payments/webhook", async (req, res) => {
 
       if (!matches.empty) {
         const bookingDoc = matches.docs[0];
-        const booking = bookingDoc.data();
 
-        if (booking.paymentMethod === "mobile_money") {
+        if (bookingDoc.data().paymentMethod === "mobile_money") {
           await confirmMpesaPayment(bookingDoc.id);
           console.log("Paystack M-Pesa confirmed:", bookingDoc.id);
         }
       } else {
-        // Card payments use the booking reference directly.
         const cardBooking = await db.collection("bookings")
           .doc(paystackReference).get();
 
-        if (cardBooking.exists &&
-            cardBooking.data().paymentMethod === "card") {
+        if (
+          cardBooking.exists &&
+          cardBooking.data().paymentMethod === "card"
+        ) {
           await confirmCardPayment(paystackReference);
           console.log("Paystack card confirmed:", paystackReference);
         }
