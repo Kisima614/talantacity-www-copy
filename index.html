@@ -12,14 +12,7 @@
 html{scroll-behavior:smooth}
 body{font-family:Arial,sans-serif;background:#080d19;color:#101827}
 
-header{
-background:rgba(5,12,25,.96);
-color:white;padding:15px 5%;
-display:flex;justify-content:space-between;
-align-items:center;flex-wrap:wrap;gap:12px;
-position:relative;z-index:5
-}
-
+header{background:rgba(5,12,25,.96);color:white;padding:15px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:relative;z-index:5}
 .logo{font-size:23px;font-weight:900;color:white;letter-spacing:1px}
 .logo span{display:block;font-size:11px;letter-spacing:5px}
 nav a{color:white;text-decoration:none;margin:10px;font-size:15px;font-weight:bold}
@@ -28,146 +21,35 @@ nav a:hover{color:#f5b942}
 .container{max-width:1100px;margin:auto;padding:12px}
 .event{margin-bottom:16px}
 
-.banner{
-position:relative;
-min-height:610px;
-padding:75px 30px 110px;
-color:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-background-image:
-linear-gradient(90deg,rgba(3,8,20,.70),rgba(3,8,20,.12)),
-linear-gradient(0deg,rgba(3,8,20,.65),transparent 65%),
-url("https://images.unsplash.com/photo-1684085035830-2da55bb70375?auto=format&fit=crop&w=2400&q=85");
-background-size:cover;
-background-position:center 55%;
-background-repeat:no-repeat;
-}
-
-.banner:after{
-content:"";
-position:absolute;
-inset:0;
-background:linear-gradient(180deg,transparent 60%,rgba(5,12,25,.5));
-pointer-events:none;
-}
-
+.banner{position:relative;min-height:610px;padding:75px 30px 110px;color:white;display:flex;flex-direction:column;justify-content:center;background-image:linear-gradient(90deg,rgba(3,8,20,.70),rgba(3,8,20,.12)),linear-gradient(0deg,rgba(3,8,20,.65),transparent 65%),url("https://images.unsplash.com/photo-1684085035830-2da55bb70375?auto=format&fit=crop&w=2400&q=85");background-size:cover;background-position:center 55%;background-repeat:no-repeat}
+.banner:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(5,12,25,.5));pointer-events:none}
 .banner-content{position:relative;z-index:2;max-width:850px}
-
-.teams{
-display:flex;
-align-items:center;
-gap:22px;
-margin-bottom:25px;
-}
-
-.team{
-width:72px;height:72px;
-border-radius:50%;
-background:white;
-display:flex;
-align-items:center;
-justify-content:center;
-overflow:hidden;
-}
-
-.team img{
-width:100%;
-height:100%;
-object-fit:contain;
-padding:5px;
-}
-
+.teams{display:flex;align-items:center;gap:22px;margin-bottom:25px}
+.team{width:72px;height:72px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.team img{width:100%;height:100%;object-fit:contain;padding:5px}
 .team-divider{height:65px;width:2px;background:rgba(255,255,255,.6)}
-
-.banner .event-label{
-font-size:18px;
-font-weight:bold;
-letter-spacing:1px;
-}
-
-.banner h1{
-font-size:clamp(43px,8vw,82px);
-line-height:1.02;
-font-weight:900;
-margin:20px 0;
-text-transform:uppercase;
-text-shadow:0 3px 15px #000;
-}
-
+.banner .event-label{font-size:18px;font-weight:bold;letter-spacing:1px}
+.banner h1{font-size:clamp(43px,8vw,82px);line-height:1.02;font-weight:900;margin:20px 0;text-transform:uppercase;text-shadow:0 3px 15px #000}
 .banner h1 span{color:#ffc329}
 .banner h2{font-size:clamp(22px,4vw,30px);margin-bottom:8px}
 .banner p{font-size:18px;line-height:1.6}
-
-.event-time{
-font-size:clamp(17px,3vw,23px)!important;
-font-weight:bold;
-margin-top:17px;
-}
-
-.buy-btn{
-display:inline-block;
-background:white;
-color:#111827;
-padding:17px 38px;
-border-radius:4px;
-text-decoration:none;
-font-size:19px;
-font-weight:bold;
-margin-top:25px;
-}
-
+.event-time{font-size:clamp(17px,3vw,23px)!important;font-weight:bold;margin-top:17px}
+.buy-btn{display:inline-block;background:white;color:#111827;padding:17px 38px;border-radius:4px;text-decoration:none;font-size:19px;font-weight:bold;margin-top:25px}
 .buy-btn:hover{background:#ffc329}
 .start-price{margin-top:18px;font-size:16px!important}
 .start-price strong{font-weight:900}
 
-.details{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-padding:22px;
-text-align:center;
-gap:10px;
-background:white;
-border-radius:12px;
-margin:-4px 10px 18px;
-position:relative;
-z-index:3;
-box-shadow:0 5px 20px rgba(0,0,0,.2);
-}
-
+.details{display:grid;grid-template-columns:repeat(3,1fr);padding:22px;text-align:center;gap:10px;background:white;border-radius:12px;margin:-4px 10px 18px;position:relative;z-index:3;box-shadow:0 5px 20px rgba(0,0,0,.2)}
 .details strong{font-size:20px}
 .details small{display:block;color:#64748b;margin-top:8px;font-size:15px}
 
-.panel{
-background:white;
-border:1px solid #e1e4e9;
-border-radius:12px;
-margin:16px 0;
-overflow:hidden;
-box-shadow:0 5px 20px rgba(0,0,0,.16);
-}
-
+.panel{background:white;border:1px solid #e1e4e9;border-radius:12px;margin:16px 0;overflow:hidden;box-shadow:0 5px 20px rgba(0,0,0,.16)}
 .panel-inner{padding:18px}
 h2{font-size:23px}
 .muted{color:#64748b;font-size:13px;margin-top:7px;line-height:1.6}
 
-.toolbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:7px;
-flex-wrap:wrap;
-margin:17px 0;
-}
-
-.toolbar button{
-padding:12px 15px;
-border:0;border-radius:6px;
-background:#101a25;color:white;
-font-weight:bold;cursor:pointer;
-}
-
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap;margin:17px 0}
+.toolbar button{padding:12px 15px;border:0;border-radius:6px;background:#101a25;color:white;font-weight:bold;cursor:pointer}
 .toolbar button.active{background:#078343}
 
 .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;margin:12px 0 18px}
@@ -178,7 +60,6 @@ font-weight:bold;cursor:pointer;
 
 .map-wrap{background:#edf2f9;padding:12px;border:1px solid #e0e4e9;overflow:hidden;border-radius:8px}
 #stadiumMap{display:block;width:100%;max-width:800px;margin:auto}
-
 .map-section{cursor:pointer;stroke:#fff;stroke-width:2;fill:#2879ed}
 .map-section.selected{fill:#c51d25}
 .map-section:hover{stroke:#e3a82e;stroke-width:3}
@@ -187,42 +68,21 @@ font-weight:bold;cursor:pointer;
 .pitch-line{fill:none;stroke:white;stroke-width:2}
 
 .ticket-control{display:flex;align-items:center;gap:22px;margin:15px 0}
-.ticket-control button{
-width:48px;height:43px;background:white;
-border:1px solid #cbd5e1;border-radius:7px;
-font-size:23px;cursor:pointer;
-}
+.ticket-control button{width:48px;height:43px;background:white;border:1px solid #cbd5e1;border-radius:7px;font-size:23px;cursor:pointer}
 .ticket-control strong{font-size:24px}
 
 .price-list{display:flex;gap:14px;overflow-x:auto;padding:4px 0 15px}
-
-.price-card{
-min-width:165px;
-border:1px solid #cbd5e1;
-border-radius:8px;
-padding:14px;
-background:white;
-text-align:left;
-cursor:pointer;
-}
-
+.price-card{min-width:165px;border:1px solid #cbd5e1;border-radius:8px;padding:14px;background:white;text-align:left;cursor:pointer}
 .price-card strong{display:block;margin-top:7px;font-size:19px}
 .price-card small{color:#64748b}
 .price-card.active{border:2px solid #078343;background:#eaf8ef}
 
-.green-btn{
-background:#087d43;color:white;border:0;
-padding:16px;width:100%;font-weight:bold;
-font-size:17px;border-radius:6px;cursor:pointer;
-}
+.green-btn{background:#087d43;color:white;border:0;padding:16px;width:100%;font-weight:bold;font-size:17px;border-radius:6px;cursor:pointer}
 .green-btn:hover{background:#056735}
-.green-btn:disabled{opacity:.5}
+.green-btn:disabled{opacity:.5;cursor:not-allowed}
 
 .section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:15px}
-.section-btn{
-padding:12px 3px;border:1px solid #d5dbe3;
-background:#f0f3f7;border-radius:6px;cursor:pointer;
-}
+.section-btn{padding:12px 3px;border:1px solid #d5dbe3;background:#f0f3f7;border-radius:6px;cursor:pointer}
 .section-btn.selected{background:#c51d25;color:white}
 
 .seat-area{padding:16px;border-top:1px solid #ddd}
@@ -237,7 +97,6 @@ background:#f0f3f7;border-radius:6px;cursor:pointer;
 
 label{display:block;font-size:14px;font-weight:bold;margin:16px 0 7px}
 input{width:100%;padding:13px;border:1px solid #cbd1da;border-radius:5px;font-size:15px}
-
 .payment{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .payment label{border:1px solid #ddd;padding:13px;border-radius:5px;display:flex;align-items:center;gap:9px}
 .payment input{width:auto}
@@ -245,6 +104,9 @@ input{width:100%;padding:13px;border:1px solid #cbd1da;border-radius:5px;font-si
 footer{background:#080e1b;color:white;text-align:center;padding:30px;margin-top:35px}
 footer p{color:#bbb;margin-top:10px;font-size:13px}
 #message{margin-top:13px;font-size:14px;line-height:1.6}
+.success-message{color:#087d43;font-weight:bold}
+.error-message{color:#c51d25}
+.pending-message{color:#805b00}
 
 @media(max-width:700px){
 header{justify-content:center;padding:14px 8px}
@@ -252,11 +114,7 @@ header{justify-content:center;padding:14px 8px}
 nav{text-align:center;width:100%}
 nav a{font-size:13px;margin:5px}
 .container{padding:9px}
-.banner{
-min-height:570px;
-padding:45px 18px 100px;
-background-position:center center;
-}
+.banner{min-height:570px;padding:45px 18px 100px;background-position:center center}
 .banner h1{font-size:clamp(39px,10vw,58px)}
 .banner p{font-size:16px}
 .banner .event-label{font-size:14px}
@@ -285,7 +143,6 @@ background-position:center center;
 TALANTA
 <span>SPORTS CITY</span>
 </div>
-
 <nav>
 <a href="#home">Home</a>
 <a href="#event">Event</a>
@@ -297,65 +154,37 @@ TALANTA
 <main class="container">
 
 <section id="home" class="event">
-
 <div class="banner">
 <div class="banner-content">
-
 <div class="teams">
-
 <div class="team">
-<img
-src="https://upload.wikimedia.org/wikipedia/commons/0/0c/FC_Bayern_M%C3%BCnchen_Logo_2017.png"
-alt="Bayern Munich"
->
+<img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/FC_Bayern_M%C3%BCnchen_Logo_2017.png" alt="Bayern Munich">
 </div>
-
 <div class="team-divider"></div>
-
 <div class="team">
 <img src="https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg" alt="Ajax">
 </div>
-
 </div>
 
 <p class="event-label">★ INTERNATIONAL CLUB FRIENDLY ★</p>
-
 <h1>BAYERN <span>VS</span> AJAX</h1>
-
 <h2>Raila Odinga International Stadium</h2>
-
 <p>NAIROBI, KENYA</p>
-
-<p class="event-time">
-Tue 5 Jan 2027 · Starts at 8:00 PM EAT
-</p>
-
+<p class="event-time">Tue 5 Jan 2027 · Starts at 8:00 PM EAT</p>
 <a href="#stadium" class="buy-btn">Buy tickets</a>
-
 <p class="start-price">From <strong>KSh 2,500</strong> per seat · <a href="#stadium" style="color:white">All prices</a></p>
-
 </div>
 </div>
 
 <div class="details" id="event">
-<div>
-<strong>📅 DATE</strong>
-<small>5 JANUARY 2027</small>
-</div>
-<div>
-<strong>⏰ KICK-OFF</strong>
-<small>8:00 PM EAT</small>
-</div>
-<div>
-<strong>📍 VENUE</strong>
-<small>NAIROBI, KENYA</small>
-</div>
+<div><strong>📅 DATE</strong><small>5 JANUARY 2027</small></div>
+<div><strong>⏰ KICK-OFF</strong><small>8:00 PM EAT</small></div>
+<div><strong>📍 VENUE</strong><small>NAIROBI, KENYA</small></div>
 </div>
 </section>
 
 <section class="panel" id="stadium">
 <div class="panel-inner">
-
 <h2>Stadium seating plan</h2>
 <p class="muted">Choose a level, select a numbered section, then choose your exact seats.</p>
 
@@ -391,9 +220,7 @@ Tue 5 Jan 2027 · Starts at 8:00 PM EAT
 </svg>
 </div>
 
-<p class="muted" style="text-align:center;margin-top:10px">
-Tap a numbered section on the map or use the section buttons below.
-</p>
+<p class="muted" style="text-align:center;margin-top:10px">Tap a numbered section on the map or use the section buttons below.</p>
 </div>
 
 <div class="panel-inner" style="border-top:1px solid #eee">
@@ -408,19 +235,13 @@ Tap a numbered section on the map or use the section buttons below.
 
 <div class="price-list">
 <button type="button" class="price-card active" onclick="chooseCategory('Regular',2500,this)">
-<small>REGULAR</small>
-<strong>KSh 2,500</strong>
-<small>Standard admission</small>
+<small>REGULAR</small><strong>KSh 2,500</strong><small>Standard admission</small>
 </button>
 <button type="button" class="price-card" onclick="chooseCategory('VIP',5000,this)">
-<small>VIP</small>
-<strong>KSh 5,000</strong>
-<small>Premium seating</small>
+<small>VIP</small><strong>KSh 5,000</strong><small>Premium seating</small>
 </button>
 <button type="button" class="price-card" onclick="chooseCategory('VVIP',15000,this)">
-<small>VVIP</small>
-<strong>KSh 15,000</strong>
-<small>Exclusive seating</small>
+<small>VVIP</small><strong>KSh 15,000</strong><small>Exclusive seating</small>
 </button>
 </div>
 </div>
@@ -440,10 +261,7 @@ Tap a numbered section on the map or use the section buttons below.
 <div class="summary-row"><span>Seats selected</span><strong id="sumSeats">0</strong></div>
 <div class="summary-row total"><span>Total</span><strong id="sumTotal">KSh 2,500</strong></div>
 </div>
-
-<button type="button" class="green-btn" id="findSeatsButton" onclick="findSeats()" style="margin-top:18px">
-🔎 FIND MY SEATS
-</button>
+<button type="button" class="green-btn" id="findSeatsButton" onclick="findSeats()" style="margin-top:18px">🔎 FIND MY SEATS</button>
 <p class="muted" style="text-align:center">Tap to load available numbered seats for your chosen section.</p>
 </div>
 
@@ -482,8 +300,8 @@ Tap a numbered section on the map or use the section buttons below.
 
 <label>Payment method</label>
 <div class="payment">
-<label><input type="radio" name="method" value="mobile_money" checked> M-Pesa</label>
-<label><input type="radio" name="method" value="card"> Bank Card</label>
+<label><input type="radio" name="method" value="mobile_money" checked> M-Pesa (PayHero)</label>
+<label><input type="radio" name="method" value="card"> Bank Card (Paystack)</label>
 </div>
 
 <div class="summary-row total">
@@ -491,7 +309,7 @@ Tap a numbered section on the map or use the section buttons below.
 <strong id="payTotal">KSh 2,500</strong>
 </div>
 
-<button class="green-btn" id="payButton" type="submit">PAY WITH PAYSTACK</button>
+<button class="green-btn" id="payButton" type="submit">PAY WITH M-PESA</button>
 <p id="message" role="status" aria-live="polite"></p>
 </form>
 </div>
@@ -521,257 +339,370 @@ const $=id=>document.getElementById(id);
 const money=n=>"KSh "+Number(n).toLocaleString("en-KE");
 
 function sectionNumbers(){
-if(level===1)return Array.from({length:28},(_,i)=>101+i);
-if(level===2)return Array.from({length:20},(_,i)=>201+i);
-return Array.from({length:35},(_,i)=>401+i);
+ if(level===1)return Array.from({length:28},(_,i)=>101+i);
+ if(level===2)return Array.from({length:20},(_,i)=>201+i);
+ return Array.from({length:35},(_,i)=>401+i);
 }
 
 function drawMap(){
-const group=$("sections");
-group.innerHTML="";
-const numbers=sectionNumbers();
-const cx=300,cy=255,rx=244,ry=202;
+ const group=$("sections");
+ group.innerHTML="";
+ const numbers=sectionNumbers();
+ const cx=300,cy=255,rx=244,ry=202;
 
-numbers.forEach((num,i)=>{
-const angle=(-Math.PI/2)+(2*Math.PI*i/numbers.length);
-const x=cx+rx*Math.cos(angle);
-const y=cy+ry*Math.sin(angle);
+ numbers.forEach((num,i)=>{
+  const angle=(-Math.PI/2)+(2*Math.PI*i/numbers.length);
+  const x=cx+rx*Math.cos(angle);
+  const y=cy+ry*Math.sin(angle);
 
-const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
-rect.setAttribute("x",x-20);
-rect.setAttribute("y",y-12);
-rect.setAttribute("width",40);
-rect.setAttribute("height",24);
-rect.setAttribute("rx",3);
-rect.setAttribute("transform",`rotate(${angle*180/Math.PI+90} ${x} ${y})`);
-rect.setAttribute("class","map-section "+(section===num?"selected":""));
-rect.addEventListener("click",()=>selectSection(num));
-group.appendChild(rect);
+  const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  rect.setAttribute("x",x-20);
+  rect.setAttribute("y",y-12);
+  rect.setAttribute("width",40);
+  rect.setAttribute("height",24);
+  rect.setAttribute("rx",3);
+  rect.setAttribute("transform",`rotate(${angle*180/Math.PI+90} ${x} ${y})`);
+  rect.setAttribute("class","map-section "+(section===num?"selected":""));
+  rect.addEventListener("click",()=>selectSection(num));
+  group.appendChild(rect);
 
-const label=document.createElementNS("http://www.w3.org/2000/svg","text");
-label.setAttribute("x",x);
-label.setAttribute("y",y+4);
-label.setAttribute("class","map-label");
-label.textContent=num;
-group.appendChild(label);
-});
+  const label=document.createElementNS("http://www.w3.org/2000/svg","text");
+  label.setAttribute("x",x);
+  label.setAttribute("y",y+4);
+  label.setAttribute("class","map-label");
+  label.textContent=num;
+  group.appendChild(label);
+ });
 
-group.setAttribute("transform",`translate(${300*(1-zoom)} ${255*(1-zoom)}) scale(${zoom})`);
+ group.setAttribute("transform",`translate(${300*(1-zoom)} ${255*(1-zoom)}) scale(${zoom})`);
 }
 
 function renderSections(){
-const root=$("sectionList");
-root.innerHTML="";
-sectionNumbers().forEach(num=>{
-const b=document.createElement("button");
-b.type="button";
-b.className="section-btn"+(section===num?" selected":"");
-b.textContent="Section "+num;
-b.onclick=()=>selectSection(num);
-root.appendChild(b);
-});
-$("sectionDescription").textContent=
-`Level ${level} · Sections ${sectionNumbers()[0]}–${sectionNumbers().slice(-1)[0]}`;
+ const root=$("sectionList");
+ root.innerHTML="";
+ sectionNumbers().forEach(num=>{
+  const b=document.createElement("button");
+  b.type="button";
+  b.className="section-btn"+(section===num?" selected":"");
+  b.textContent="Section "+num;
+  b.onclick=()=>selectSection(num);
+  root.appendChild(b);
+ });
+ $("sectionDescription").textContent=`Level ${level} · Sections ${sectionNumbers()[0]}–${sectionNumbers().slice(-1)[0]}`;
 }
 
 function changeLevel(n,button){
-level=n;
-section=null;
-selectedSeats=[];
-currentSeats=[];
-$("seatArea").hidden=true;
-document.querySelectorAll(".level").forEach(b=>b.classList.remove("active"));
-button.classList.add("active");
-drawMap();
-renderSections();
-update();
+ level=n;
+ section=null;
+ selectedSeats=[];
+ currentSeats=[];
+ $("seatArea").hidden=true;
+ document.querySelectorAll(".level").forEach(b=>b.classList.remove("active"));
+ button.classList.add("active");
+ drawMap();
+ renderSections();
+ update();
 }
 
 function chooseCategory(name,cost,button){
-category=name;
-price=cost;
-document.querySelectorAll(".price-card").forEach(b=>b.classList.remove("active"));
-button.classList.add("active");
-update();
+ category=name;
+ price=cost;
+ document.querySelectorAll(".price-card").forEach(b=>b.classList.remove("active"));
+ button.classList.add("active");
+ update();
 }
 
 function selectSection(num){
-section=num;
-selectedSeats=[];
-currentSeats=[];
-$("seatArea").hidden=true;
-drawMap();
-renderSections();
-update();
+ section=num;
+ selectedSeats=[];
+ currentSeats=[];
+ $("seatArea").hidden=true;
+ drawMap();
+ renderSections();
+ update();
 }
 
 function changeQuantity(delta){
-quantity=Math.max(1,Math.min(20,quantity+delta));
-if(selectedSeats.length>quantity)selectedSeats=selectedSeats.slice(0,quantity);
-renderSeatGrid();
-update();
+ quantity=Math.max(1,Math.min(20,quantity+delta));
+ if(selectedSeats.length>quantity)selectedSeats=selectedSeats.slice(0,quantity);
+ renderSeatGrid();
+ update();
 }
 
 async function findSeats(){
-if(!section){
-alert("Please select a numbered section first.");
-return;
-}
-const button=$("findSeatsButton");
-const requestToken=++seatRequestToken;
-button.disabled=true;
-button.textContent="LOADING AVAILABLE SEATS...";
-$("seatArea").hidden=false;
-$("seatMessage").textContent="Checking live seat availability...";
-$("seatGrid").innerHTML="";
+ if(!section){
+  alert("Please select a numbered section first.");
+  return;
+ }
 
-try{
-const response=await fetch(`${BACKEND_URL}/api/seats/${level}/${section}`);
-const result=await response.json();
+ const button=$("findSeatsButton");
+ const requestToken=++seatRequestToken;
+ button.disabled=true;
+ button.textContent="LOADING AVAILABLE SEATS...";
+ $("seatArea").hidden=false;
+ $("seatMessage").textContent="Checking live seat availability...";
+ $("seatGrid").innerHTML="";
 
-if(requestToken!==seatRequestToken)return;
-if(!response.ok||!result.status||!Array.isArray(result.seats)){
-throw new Error(result.message||"Could not load seats.");
-}
-currentSeats=result.seats;
-selectedSeats=[];
-renderSeatGrid();
-$("seatMessage").textContent=
-`Level ${level}, Section ${section}: choose ${quantity} seat(s).`;
-$("seatArea").scrollIntoView({behavior:"smooth",block:"start"});
-}catch(error){
-$("seatMessage").textContent=error.message;
-}finally{
-button.disabled=false;
-button.textContent="🔎 FIND MY SEATS";
-}
+ try{
+  const response=await fetch(`${BACKEND_URL}/api/seats/${level}/${section}`);
+  const result=await response.json();
+
+  if(requestToken!==seatRequestToken)return;
+  if(!response.ok||!result.status||!Array.isArray(result.seats)){
+   throw new Error(result.message||"Could not load seats.");
+  }
+
+  currentSeats=result.seats;
+  selectedSeats=[];
+  renderSeatGrid();
+  $("seatMessage").textContent=`Level ${level}, Section ${section}: choose ${quantity} seat(s).`;
+  $("seatArea").scrollIntoView({behavior:"smooth",block:"start"});
+ }catch(error){
+  $("seatMessage").textContent=error.message;
+ }finally{
+  button.disabled=false;
+  button.textContent="🔎 FIND MY SEATS";
+ }
 }
 
 function renderSeatGrid(){
-const grid=$("seatGrid");
-grid.innerHTML="";
-currentSeats.forEach(seat=>{
-const b=document.createElement("button");
-b.type="button";
-b.className="seat";
-b.textContent=seat.number;
-const unavailable=seat.status!=="available";
+ const grid=$("seatGrid");
+ grid.innerHTML="";
 
-if(unavailable){
-b.classList.add("unavailable");
-b.disabled=true;
-b.title=seat.status;
-}else if(selectedSeats.includes(seat.number)){
-b.classList.add("selected");
-}
+ currentSeats.forEach(seat=>{
+  const b=document.createElement("button");
+  b.type="button";
+  b.className="seat";
+  b.textContent=seat.number;
+  const unavailable=seat.status!=="available";
 
-b.onclick=()=>{
-if(unavailable)return;
-if(selectedSeats.includes(seat.number)){
-selectedSeats=selectedSeats.filter(n=>n!==seat.number);
-}else{
-if(selectedSeats.length>=quantity){
-alert("You have already selected the required number of seats.");
-return;
-}
-selectedSeats.push(seat.number);
-}
-renderSeatGrid();
-update();
-};
-grid.appendChild(b);
-});
+  if(unavailable){
+   b.classList.add("unavailable");
+   b.disabled=true;
+   b.title=seat.status;
+  }else if(selectedSeats.includes(seat.number)){
+   b.classList.add("selected");
+  }
+
+  b.onclick=()=>{
+   if(unavailable)return;
+
+   if(selectedSeats.includes(seat.number)){
+    selectedSeats=selectedSeats.filter(n=>n!==seat.number);
+   }else{
+    if(selectedSeats.length>=quantity){
+     alert("You have already selected the required number of seats.");
+     return;
+    }
+    selectedSeats.push(seat.number);
+   }
+
+   renderSeatGrid();
+   update();
+  };
+
+  grid.appendChild(b);
+ });
 }
 
 function continueToCheckout(){
-if(!section){
-alert("Please choose a stadium section.");
-return;
-}
-if(selectedSeats.length!==quantity){
-alert(`Please select exactly ${quantity} available seat(s).`);
-return;
-}
-$("selectedSeatsInput").value=
-selectedSeats.slice().sort((a,b)=>a-b).join(", ");
-$("booking").scrollIntoView({behavior:"smooth",block:"start"});
+ if(!section){
+  alert("Please choose a stadium section.");
+  return;
+ }
+ if(selectedSeats.length!==quantity){
+  alert(`Please select exactly ${quantity} available seat(s).`);
+  return;
+ }
+
+ $("selectedSeatsInput").value=selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+ $("booking").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 function update(){
-$("quantityDisplay").textContent=quantity;
-$("sumCategory").textContent=category;
-$("sumLevel").textContent="Level "+level;
-$("sumSection").textContent=section||"Please select a section";
-$("sumQuantity").textContent=quantity;
-$("sumSeats").textContent=selectedSeats.length;
-$("sumTotal").textContent=money(price*quantity);
-$("payTotal").textContent=money(price*quantity);
-$("categoryInput").value=category+" - "+money(price);
-$("selectedSeatsInput").value=
-selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+ $("quantityDisplay").textContent=quantity;
+ $("sumCategory").textContent=category;
+ $("sumLevel").textContent="Level "+level;
+ $("sumSection").textContent=section||"Please select a section";
+ $("sumQuantity").textContent=quantity;
+ $("sumSeats").textContent=selectedSeats.length;
+ $("sumTotal").textContent=money(price*quantity);
+ $("payTotal").textContent=money(price*quantity);
+ $("categoryInput").value=category+" - "+money(price);
+ $("selectedSeatsInput").value=selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+
+ const method=document.querySelector('input[name="method"]:checked');
+ $("payButton").textContent=method&&method.value==="card"?"PAY WITH PAYSTACK":"PAY WITH M-PESA";
 }
 
 function zoomMap(n){
-zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
-drawMap();
+ zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
+ drawMap();
 }
 
 function resetMap(){
-zoom=1;
-drawMap();
+ zoom=1;
+ drawMap();
+}
+
+/* Payment status polling for PayHero M-Pesa */
+async function checkMpesaPayment(reference){
+ const message=$("message");
+ const button=$("payButton");
+ const maxAttempts=60;
+
+ for(let attempt=1;attempt<=maxAttempts;attempt++){
+  await new Promise(resolve=>setTimeout(resolve,3000));
+
+  let response;
+  let result;
+
+  try{
+   response=await fetch(
+    `${BACKEND_URL}/api/payments/status/${encodeURIComponent(reference)}`,
+    {method:"GET",headers:{"Accept":"application/json"}}
+   );
+   result=await response.json();
+  }catch(error){
+   message.textContent="Checking payment status. Please keep this page open...";
+   message.className="pending-message";
+   continue;
+  }
+
+  if(!response.ok){
+   message.textContent=result.message||"Payment status is still being checked...";
+   message.className="pending-message";
+   continue;
+  }
+
+  const statusValues=[
+   result.payment_status,
+   result.paymentStatus,
+   result.transaction_status,
+   result.transactionStatus,
+   result.booking_status,
+   result.bookingStatus,
+   result.payment&&result.payment.status,
+   result.booking&&result.booking.paymentStatus,
+   result.data&&result.data.status
+  ];
+
+  const normalized=statusValues
+   .filter(value=>typeof value==="string")
+   .map(value=>value.toUpperCase());
+
+  const paid=normalized.some(value=>
+   ["SUCCESS","SUCCESSFUL","PAID","COMPLETED","CONFIRMED"].includes(value)
+  );
+
+  const failed=normalized.some(value=>
+   ["FAILED","CANCELLED","CANCELED","REJECTED","EXPIRED"].includes(value)
+  );
+
+  if(paid){
+   message.textContent="Payment confirmed! Your booking has been completed. Please check your email for your ticket confirmation.";
+   message.className="success-message";
+   button.textContent="PAYMENT CONFIRMED";
+   button.disabled=true;
+   return true;
+  }
+
+  if(failed){
+   throw new Error(result.message||"Payment was not completed. Please try again.");
+  }
+
+  message.textContent="M-Pesa request sent. Please enter your M-Pesa PIN on your phone. Waiting for payment confirmation...";
+  message.className="pending-message";
+ }
+
+ throw new Error("We have not received payment confirmation yet. Please check your M-Pesa messages before trying again.");
 }
 
 $("bookingForm").addEventListener("submit",async e=>{
-e.preventDefault();
+ e.preventDefault();
 
-if(!section||selectedSeats.length!==quantity){
-$("message").textContent="Please select your exact seats before payment.";
-$("stadium").scrollIntoView({behavior:"smooth"});
-return;
-}
+ if(!section||selectedSeats.length!==quantity){
+  $("message").textContent="Please select your exact seats before payment.";
+  $("message").className="error-message";
+  $("stadium").scrollIntoView({behavior:"smooth"});
+  return;
+ }
 
-const name=$("name").value.trim();
-const phone=$("phone").value.trim();
-const email=$("email").value.trim();
-const method=document.querySelector('input[name="method"]:checked').value;
-const message=$("message");
-const button=$("payButton");
+ const name=$("name").value.trim();
+ const phone=$("phone").value.trim();
+ const email=$("email").value.trim();
+ const method=document.querySelector('input[name="method"]:checked').value;
+ const message=$("message");
+ const button=$("payButton");
 
-button.disabled=true;
-button.textContent="CONNECTING TO PAYSTACK...";
-message.textContent="Preparing your seat reservation...";
+ button.disabled=true;
+ button.textContent=method==="card"?"CONNECTING TO PAYSTACK...":"CONNECTING TO PAYHERO...";
+ message.className="pending-message";
+ message.textContent="Preparing your seat reservation...";
 
-try{
-const response=await fetch(BACKEND_URL+"/api/payments/initialize",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-name,
-phone,
-email,
-quantity,
-payment_method:method,
-ticket_type:category,
-stadium_level:level,
-section,
-selected_seats:selectedSeats.slice().sort((a,b)=>a-b)
-})
+ try{
+  const response=await fetch(BACKEND_URL+"/api/payments/initialize",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    name,
+    phone,
+    email,
+    quantity,
+    payment_method:method,
+    ticket_type:category,
+    stadium_level:level,
+    section,
+    selected_seats:selectedSeats.slice().sort((a,b)=>a-b)
+   })
+  });
+
+  const result=await response.json();
+
+  if(!response.ok||!result.status){
+   throw new Error(result.message||"Payment initialization failed.");
+  }
+
+  /* Card payment: redirect to Paystack */
+  if(method==="card"){
+   const paymentUrl=result.authorization_url||result.checkout_url||result.payment_url;
+
+   if(!paymentUrl){
+    throw new Error("Paystack did not return a payment link. Please contact support.");
+   }
+
+   message.textContent="Opening secure Paystack card payment...";
+   window.location.href=paymentUrl;
+   return;
+  }
+
+  /* M-Pesa payment: PayHero sends a prompt to the customer's phone */
+  const reference=
+   result.reference||
+   result.booking_reference||
+   result.external_reference;
+
+  if(!reference){
+   throw new Error("PayHero did not return a booking reference. Please contact support before retrying.");
+  }
+
+  message.textContent="M-Pesa payment request sent. Check your phone and enter your M-Pesa PIN. Do not close this page.";
+  message.className="pending-message";
+  button.textContent="WAITING FOR M-PESA...";
+
+  await checkMpesaPayment(reference);
+
+ }catch(err){
+  message.textContent=err.message+" If you have already received an M-Pesa prompt or paid, check your M-Pesa messages before retrying.";
+  message.className="error-message";
+  button.disabled=false;
+  button.textContent=method==="card"?"PAY WITH PAYSTACK":"PAY WITH M-PESA";
+ }
 });
 
-const result=await response.json();
-
-if(!response.ok||!result.status||!result.authorization_url){
-throw new Error(result.message||"Payment initialization failed.");
-}
-
-message.textContent="Reservation ready. Redirecting to secure payment...";
-window.location.href=result.authorization_url;
-
-}catch(err){
-message.textContent=err.message+" Please try again.";
-button.disabled=false;
-button.textContent="PAY WITH PAYSTACK";
-}
+/* Update checkout button when payment method changes */
+document.querySelectorAll('input[name="method"]').forEach(radio=>{
+ radio.addEventListener("change",update);
 });
 
 drawMap();
