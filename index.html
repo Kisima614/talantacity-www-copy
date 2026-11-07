@@ -9,129 +9,328 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+
 body{
 font-family:Arial,sans-serif;
 background:#10131d;
 color:#18202c;
 background-image:
-linear-gradient(180deg,rgba(8,12,22,.94),rgba(13,15,24,.72) 30%,rgba(12,18,30,.72) 68%,rgba(7,13,24,.92)),
+linear-gradient(180deg,rgba(8,12,22,.78),rgba(13,15,24,.40) 35%,rgba(7,13,24,.72)),
 url("talanta-stadium-bg.jpg");
-background-size:cover,100% auto;
-background-position:center,center bottom;
+background-size:cover;
+background-position:center;
 background-repeat:no-repeat;
-background-attachment:fixed
+background-attachment:fixed;
 }
+
 header{
-background:rgba(9,15,29,.94);
+background:rgba(9,15,29,.96);
 color:white;
 padding:16px 5%;
 display:flex;
 justify-content:space-between;
 align-items:center;
 flex-wrap:wrap;
-gap:12px;
-border-bottom:1px solid rgba(255,255,255,.12)
+gap:12px
 }
+
 .logo{font-size:20px;font-weight:900;color:#f5b942}
 nav a{color:white;text-decoration:none;margin:7px;font-size:13px}
 .container{max-width:1050px;margin:auto;padding:15px}
+
 .event{background:transparent;margin:18px 0;border-radius:10px;overflow:hidden}
+
 .banner{
-background:linear-gradient(90deg,rgba(7,10,20,.86),rgba(7,10,20,.30));
+background:linear-gradient(90deg,rgba(7,10,20,.75),rgba(7,10,20,.18));
 color:white;
 text-align:left;
-padding:clamp(38px,8vw,85px) clamp(20px,5vw,55px) 34px;
-min-height:390px;
+padding:55px 25px;
+min-height:440px;
 display:flex;
 flex-direction:column;
 justify-content:center
 }
-.banner>p:first-child{font-size:12px;letter-spacing:2px;font-weight:bold;color:#f5b942}
-.banner h1{font-size:clamp(38px,8vw,68px);line-height:.98;margin:18px 0 12px;font-weight:900;letter-spacing:-1.8px}
+
+.banner h1{
+font-size:clamp(38px,8vw,68px);
+margin:18px 0;
+line-height:1;
+font-weight:900
+}
+
 .banner span{color:#f5b942}
-.banner h2{font-size:clamp(17px,3vw,24px);margin-bottom:8px;color:#fff}
-.banner p{font-size:14px;line-height:1.8}
+.banner h2{font-size:22px;margin-bottom:8px}
+.banner p{font-size:15px;line-height:1.8}
+
 .details{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 padding:18px;
 text-align:center;
 gap:10px;
-background:#fff;
+background:white;
 border-radius:10px;
-margin:0 12px 14px
+margin:0 10px
 }
+
 .details small{display:block;color:#7b8491;margin-top:7px}
+
 .panel{
-background:rgba(255,255,255,.97);
+background:white;
 border:1px solid #e1e4e9;
-border-radius:9px;
+border-radius:8px;
 margin:14px 0;
 overflow:hidden
 }
+
 .panel-inner{padding:16px}
 h2{font-size:21px}
 .muted{color:#7d8592;font-size:13px;margin-top:7px;line-height:1.6}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap;margin:17px 0}
-.toolbar button{padding:12px 15px;border:0;border-radius:4px;background:#101a25;color:white;font-weight:bold}
+
+.toolbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:7px;
+flex-wrap:wrap;
+margin:17px 0
+}
+
+.toolbar button{
+padding:12px 15px;
+border:0;
+border-radius:4px;
+background:#101a25;
+color:white;
+font-weight:bold
+}
+
 .toolbar button.active{background:#0d8046}
+
 .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;margin:12px 0 18px}
-.dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px}
+
+.dot{
+display:inline-block;
+width:11px;
+height:11px;
+border-radius:3px;
+margin-right:5px
+}
+
 .blue{background:#6191ed}
 .red{background:#c51d25}
 .grey{background:#c5cad2}
-.map-wrap{background:#edf0f5;padding:12px;border:1px solid #e0e4e9;overflow:hidden}
+
+.map-wrap{
+background:#edf0f5;
+padding:12px;
+border:1px solid #e0e4e9;
+overflow:hidden
+}
+
 #stadiumMap{display:block;width:100%;max-width:640px;margin:auto}
-.map-section{cursor:pointer;stroke:#fff;stroke-width:1.5;fill:#6191ed}
+
+.map-section{
+cursor:pointer;
+stroke:#fff;
+stroke-width:1.5;
+fill:#6191ed
+}
+
 .map-section.selected{fill:#c51d25}
 .map-section:hover{stroke:#e3a82e;stroke-width:3}
-.map-label{font-size:12px;font-weight:bold;fill:white;pointer-events:none;text-anchor:middle}
+
+.map-label{
+font-size:12px;
+font-weight:bold;
+fill:white;
+pointer-events:none;
+text-anchor:middle
+}
+
 .pitch{fill:#87c39b;stroke:white;stroke-width:2}
 .pitch-line{fill:none;stroke:white;stroke-width:2}
+
 .ticket-control{display:flex;align-items:center;gap:22px;margin:15px 0}
-.ticket-control button{width:43px;height:43px;background:white;border:1px solid #aaa;font-size:23px}
+
+.ticket-control button{
+width:43px;
+height:43px;
+background:white;
+border:1px solid #aaa;
+font-size:23px
+}
+
 .ticket-control strong{font-size:24px}
-.price-list{display:flex;gap:10px;overflow-x:auto;padding:4px 0 15px}
-.price-card{min-width:155px;border:1px solid #d2d5da;border-radius:4px;padding:13px;background:white;text-align:left;cursor:pointer}
+
+.price-list{
+display:flex;
+gap:10px;
+overflow-x:auto;
+padding:4px 0 15px
+}
+
+.price-card{
+min-width:155px;
+border:1px solid #d2d5da;
+border-radius:4px;
+padding:13px;
+background:white;
+text-align:left;
+cursor:pointer
+}
+
 .price-card strong{display:block;margin-top:7px;font-size:18px}
 .price-card small{color:#7e8793}
-.price-card.active{border:2px solid #12804a;background:#f0faf4}
-.green-btn{background:#087d43;color:white;border:0;padding:16px;width:100%;font-weight:bold;font-size:17px;border-radius:4px;cursor:pointer}
+
+.price-card.active{
+border:2px solid #12804a;
+background:#f0faf4
+}
+
+.green-btn{
+background:#087d43;
+color:white;
+border:0;
+padding:16px;
+width:100%;
+font-weight:bold;
+font-size:17px;
+border-radius:4px;
+cursor:pointer
+}
+
 .green-btn:disabled{opacity:.5}
-.section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:15px}
-.section-btn{padding:12px 3px;border:1px solid #d5dbe3;background:#f4f6f8;border-radius:4px;cursor:pointer}
+
+.section-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:8px;
+padding:15px
+}
+
+.section-btn{
+padding:12px 3px;
+border:1px solid #d5dbe3;
+background:#f4f6f8;
+border-radius:4px;
+cursor:pointer
+}
+
 .section-btn.selected{background:#c51d25;color:white}
+
 .seat-area{padding:16px;border-top:1px solid #ddd}
-.seat-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:14px}
-.seat{padding:10px 1px;background:#dce8f8;border:0;border-radius:4px;font-size:12px;cursor:pointer}
+
+.seat-grid{
+display:grid;
+grid-template-columns:repeat(10,1fr);
+gap:6px;
+margin-top:14px
+}
+
+.seat{
+padding:10px 1px;
+background:#dce8f8;
+border:0;
+border-radius:4px;
+font-size:12px;
+cursor:pointer
+}
+
 .seat.selected{background:#c51d25;color:white}
-.seat.unavailable{background:#c5cad2;color:#737b85;cursor:not-allowed}
-.summary{background:#eef2f7;padding:16px;border-radius:5px;margin-top:17px}
-.summary-row{display:flex;justify-content:space-between;gap:10px;margin:11px 0;font-size:14px}
-.summary-row.total{font-size:20px;font-weight:bold;border-top:1px solid #ccd3dc;padding-top:14px}
-label{display:block;font-size:14px;font-weight:bold;margin:16px 0 7px}
-input{width:100%;padding:13px;border:1px solid #cbd1da;border-radius:5px;font-size:15px}
-.payment{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.payment label{border:1px solid #ddd;padding:13px;border-radius:5px;display:flex;align-items:center;gap:9px}
+
+.seat.unavailable{
+background:#c5cad2;
+color:#737b85;
+cursor:not-allowed
+}
+
+.summary{
+background:#eef2f7;
+padding:16px;
+border-radius:5px;
+margin-top:17px
+}
+
+.summary-row{
+display:flex;
+justify-content:space-between;
+gap:10px;
+margin:11px 0;
+font-size:14px
+}
+
+.summary-row.total{
+font-size:20px;
+font-weight:bold;
+border-top:1px solid #ccd3dc;
+padding-top:14px
+}
+
+label{
+display:block;
+font-size:14px;
+font-weight:bold;
+margin:16px 0 7px
+}
+
+input{
+width:100%;
+padding:13px;
+border:1px solid #cbd1da;
+border-radius:5px;
+font-size:15px
+}
+
+.payment{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px
+}
+
+.payment label{
+border:1px solid #ddd;
+padding:13px;
+border-radius:5px;
+display:flex;
+align-items:center;
+gap:9px
+}
+
 .payment input{width:auto}
-footer{background:rgba(9,15,29,.96);color:white;text-align:center;padding:30px;margin-top:35px}
+
+footer{
+background:rgba(9,15,29,.97);
+color:white;
+text-align:center;
+padding:30px;
+margin-top:35px
+}
+
 footer p{color:#bbb;margin-top:10px;font-size:13px}
 #message{margin-top:13px;font-size:14px;line-height:1.6}
 
 @media(max-width:550px){
-header{justify-content:space-between;padding:15px 5%}
-.logo{font-size:17px}
-nav{text-align:center;width:100%;display:flex;justify-content:center;flex-wrap:wrap}
-nav a{margin:5px;font-size:12px}
-.container{padding:10px}
-.banner{min-height:440px;padding:55px 18px 28px}
-.banner h1{font-size:clamp(39px,11vw,58px)}
-.banner p{font-size:13px}
-.details{grid-template-columns:1fr;margin:0 8px 10px;padding:14px}
+
+header{justify-content:center}
+nav{text-align:center}
+
+.details{grid-template-columns:1fr}
+
 .panel-inner{padding:12px}
+
 .seat-grid{gap:4px}
+
 .seat{font-size:10px;padding:9px 0}
+
 .section-grid{grid-template-columns:repeat(3,1fr)}
+
+.banner{
+min-height:440px;
+padding:45px 18px
+}
+
+.banner h1{font-size:clamp(38px,10vw,58px)}
 }
 </style>
 </head>
@@ -151,30 +350,53 @@ nav a{margin:5px;font-size:12px}
 <main class="container">
 
 <section id="home" class="event">
+
 <div class="banner">
 <p>★ INTERNATIONAL CLUB FRIENDLY ★</p>
+
 <h1>BAYERN <span>VS</span> AJAX</h1>
+
 <h2>Raila Odinga International Stadium</h2>
+
 <p>NAIROBI, KENYA</p>
+
 <p style="font-size:clamp(16px,3vw,21px);font-weight:bold;margin-top:18px">
 Tue 5 Jan 2027 · Starts at 8:00 PM EAT
 </p>
 </div>
 
 <div class="details" id="event">
-<div><strong>📅 DATE</strong><small>5 JANUARY 2027</small></div>
-<div><strong>⏰ KICK-OFF</strong><small>8:00 PM EAT</small></div>
-<div><strong>📍 VENUE</strong><small>NAIROBI, KENYA</small></div>
+
+<div>
+<strong>📅 DATE</strong>
+<small>5 JANUARY 2027</small>
+</div>
+
+<div>
+<strong>⏰ KICK-OFF</strong>
+<small>8:00 PM EAT</small>
+</div>
+
+<div>
+<strong>📍 VENUE</strong>
+<small>NAIROBI, KENYA</small>
+</div>
+
 </div>
 </section>
 
 <section class="panel" id="stadium">
 
 <div class="panel-inner">
+
 <h2>Stadium seating plan</h2>
-<p class="muted">Choose a level, select a numbered section, then choose your exact seats.</p>
+
+<p class="muted">
+Choose a level, select a numbered section, then choose your exact seats.
+</p>
 
 <div class="toolbar">
+
 <div>
 <button type="button" onclick="zoomMap(1)">＋</button>
 <button type="button" onclick="zoomMap(-1)">−</button>
@@ -186,6 +408,7 @@ Tue 5 Jan 2027 · Starts at 8:00 PM EAT
 <button type="button" class="level" onclick="changeLevel(2,this)">LEVEL 2</button>
 <button type="button" class="level" onclick="changeLevel(3,this)">LEVEL 3</button>
 </div>
+
 </div>
 
 <div class="legend">
@@ -195,86 +418,165 @@ Tue 5 Jan 2027 · Starts at 8:00 PM EAT
 </div>
 
 <div class="map-wrap">
+
 <svg id="stadiumMap" viewBox="0 0 600 510" aria-label="Illustrative stadium seating map">
+
 <ellipse cx="300" cy="255" rx="260" ry="220" fill="#d8dde5" stroke="#aeb6c2" stroke-width="2"/>
+
 <ellipse cx="300" cy="255" rx="208" ry="171" fill="#edf0f5" stroke="#b4bdca" stroke-width="14"/>
+
 <ellipse cx="300" cy="255" rx="157" ry="124" fill="#d7dce5" stroke="#b4bdca" stroke-width="5"/>
+
 <rect class="pitch" x="190" y="180" width="220" height="150" rx="3"/>
+
 <path class="pitch-line" d="M300 180V330 M190 255H410 M300 218a37 37 0 1 0 0 74a37 37 0 1 0 0-74"/>
+
 <text x="300" y="168" text-anchor="middle" font-size="11" fill="#78818d">NORTH</text>
+
 <text x="300" y="350" text-anchor="middle" font-size="11" fill="#78818d">SOUTH</text>
+
 <g id="sections"></g>
+
 </svg>
 </div>
 
 <p class="muted" style="text-align:center;margin-top:10px">
 Tap a numbered section on the map or use the section buttons below.
 </p>
+
 </div>
 
 <div class="panel-inner" style="border-top:1px solid #eee">
+
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+
 <h2>Ticket category and quantity</h2>
+
 <div class="ticket-control">
 <button type="button" onclick="changeQuantity(-1)">−</button>
 <strong id="quantityDisplay">1</strong>
 <button type="button" onclick="changeQuantity(1)">+</button>
 </div>
+
 </div>
 
 <div class="price-list">
+
 <button type="button" class="price-card active" onclick="chooseCategory('Regular',2500,this)">
-<small>REGULAR</small><strong>KSh 2,500</strong><small>Standard admission</small>
+<small>REGULAR</small>
+<strong>KSh 2,500</strong>
+<small>Standard admission</small>
 </button>
+
 <button type="button" class="price-card" onclick="chooseCategory('VIP',5000,this)">
-<small>VIP</small><strong>KSh 5,000</strong><small>Premium seating</small>
+<small>VIP</small>
+<strong>KSh 5,000</strong>
+<small>Premium seating</small>
 </button>
+
 <button type="button" class="price-card" onclick="chooseCategory('VVIP',15000,this)">
-<small>VVIP</small><strong>KSh 15,000</strong><small>Exclusive seating</small>
+<small>VVIP</small>
+<strong>KSh 15,000</strong>
+<small>Exclusive seating</small>
 </button>
+
 </div>
 </div>
 
 <div style="padding:15px 16px;border-top:1px solid #ddd">
+
 <h3>Choose a numbered section</h3>
-<p class="muted" id="sectionDescription">Level 1 · Sections 101–128</p>
+
+<p class="muted" id="sectionDescription">
+Level 1 · Sections 101–128
+</p>
+
 <div class="section-grid" id="sectionList"></div>
+
 </div>
 
 <div class="panel-inner">
+
 <div class="summary">
-<div class="summary-row"><span>Category</span><strong id="sumCategory">Regular</strong></div>
-<div class="summary-row"><span>Level</span><strong id="sumLevel">Level 1</strong></div>
-<div class="summary-row"><span>Selected section</span><strong id="sumSection">None</strong></div>
-<div class="summary-row"><span>Tickets required</span><strong id="sumQuantity">1</strong></div>
-<div class="summary-row"><span>Seats selected</span><strong id="sumSeats">0</strong></div>
-<div class="summary-row total"><span>Total</span><strong id="sumTotal">KSh 2,500</strong></div>
+
+<div class="summary-row">
+<span>Category</span>
+<strong id="sumCategory">Regular</strong>
+</div>
+
+<div class="summary-row">
+<span>Level</span>
+<strong id="sumLevel">Level 1</strong>
+</div>
+
+<div class="summary-row">
+<span>Selected section</span>
+<strong id="sumSection">None</strong>
+</div>
+
+<div class="summary-row">
+<span>Tickets required</span>
+<strong id="sumQuantity">1</strong>
+</div>
+
+<div class="summary-row">
+<span>Seats selected</span>
+<strong id="sumSeats">0</strong>
+</div>
+
+<div class="summary-row total">
+<span>Total</span>
+<strong id="sumTotal">KSh 2,500</strong>
+</div>
+
 </div>
 
 <button type="button" class="green-btn" id="findSeatsButton" onclick="findSeats()" style="margin-top:18px">
 🔎 FIND MY SEATS
 </button>
-<p class="muted" style="text-align:center">Tap to load available numbered seats for your chosen section.</p>
+
+<p class="muted" style="text-align:center">
+Tap to load available numbered seats for your chosen section.
+</p>
+
 </div>
 
 <div class="seat-area" id="seatArea" hidden>
+
 <h3>Choose your exact seats</h3>
-<p class="muted" id="seatMessage">Select the seat numbers you want.</p>
+
+<p class="muted" id="seatMessage">
+Select the seat numbers you want.
+</p>
+
 <div class="seat-grid" id="seatGrid"></div>
-<p class="muted" style="margin-top:12px">Blue = available · Red = selected · Grey = unavailable</p>
+
+<p class="muted" style="margin-top:12px">
+Blue = available · Red = selected · Grey = unavailable
+</p>
+
 </div>
 
 <div class="panel-inner">
-<button type="button" class="green-btn" onclick="continueToCheckout()">CONTINUE TO CHECKOUT</button>
+<button type="button" class="green-btn" onclick="continueToCheckout()">
+CONTINUE TO CHECKOUT
+</button>
 </div>
+
 </section>
 
 <section class="panel" id="booking">
+
 <div class="panel-inner">
+
 <h2>Complete your booking</h2>
-<p class="muted">Enter your details to continue to secure payment.</p>
+
+<p class="muted">
+Enter your details to continue to secure payment.
+</p>
 
 <form id="bookingForm">
+
 <label for="name">Full Name</label>
 <input id="name" required maxlength="100" placeholder="Your full name">
 
@@ -291,29 +593,50 @@ Tap a numbered section on the map or use the section buttons below.
 <input id="selectedSeatsInput" readonly placeholder="No seats selected">
 
 <label>Payment method</label>
+
 <div class="payment">
-<label><input type="radio" name="method" value="mobile_money" checked>M-Pesa</label>
-<label><input type="radio" name="method" value="card">Bank Card</label>
+
+<label>
+<input type="radio" name="method" value="mobile_money" checked>
+M-Pesa
+</label>
+
+<label>
+<input type="radio" name="method" value="card">
+Bank Card
+</label>
+
 </div>
 
 <div class="summary-row total">
-<span>Amount payable</span><strong id="payTotal">KSh 2,500</strong>
+<span>Amount payable</span>
+<strong id="payTotal">KSh 2,500</strong>
 </div>
 
-<button class="green-btn" id="payButton" type="submit">PAY WITH PAYSTACK</button>
+<button class="green-btn" id="payButton" type="submit">
+PAY WITH PAYSTACK
+</button>
+
 <p id="message" role="status" aria-live="polite"></p>
+
 </form>
 </div>
 </section>
+
 </main>
 
 <footer>
+
 <div class="logo">🎟 TALANTA SPORT CITY</div>
+
 <p>Discover. Book. Experience.</p>
+
 <p>© 2026 Talanta Sport City. All rights reserved.</p>
+
 </footer>
 
 <script>
+
 const BACKEND_URL="https://talanta-sport-city-backend.onrender.com";
 
 let level=1;
@@ -327,237 +650,390 @@ let currentSeats=[];
 let seatRequestToken=0;
 
 const $=id=>document.getElementById(id);
+
 const money=n=>"KSh "+Number(n).toLocaleString("en-KE");
 
 function sectionNumbers(){
+
 if(level===1)return Array.from({length:28},(_,i)=>101+i);
+
 if(level===2)return Array.from({length:20},(_,i)=>201+i);
+
 return Array.from({length:35},(_,i)=>401+i);
+
 }
 
 function drawMap(){
+
 const group=$("sections");
+
 group.innerHTML="";
+
 const numbers=sectionNumbers();
+
 const cx=300,cy=255,rx=244,ry=202;
 
 numbers.forEach((num,i)=>{
+
 const angle=(-Math.PI/2)+(2*Math.PI*i/numbers.length);
+
 const x=cx+rx*Math.cos(angle);
+
 const y=cy+ry*Math.sin(angle);
 
 const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+
 rect.setAttribute("x",x-20);
 rect.setAttribute("y",y-12);
 rect.setAttribute("width",40);
 rect.setAttribute("height",24);
 rect.setAttribute("rx",3);
+
 rect.setAttribute("transform",`rotate(${angle*180/Math.PI+90} ${x} ${y})`);
+
 rect.setAttribute("class","map-section "+(section===num?"selected":""));
+
 rect.addEventListener("click",()=>selectSection(num));
+
 group.appendChild(rect);
 
 const label=document.createElementNS("http://www.w3.org/2000/svg","text");
+
 label.setAttribute("x",x);
 label.setAttribute("y",y+4);
 label.setAttribute("class","map-label");
+
 label.textContent=num;
+
 group.appendChild(label);
+
 });
 
 group.setAttribute("transform",`translate(${300*(1-zoom)} ${255*(1-zoom)}) scale(${zoom})`);
+
 }
 
 function renderSections(){
+
 const root=$("sectionList");
+
 root.innerHTML="";
+
 sectionNumbers().forEach(num=>{
+
 const b=document.createElement("button");
+
 b.type="button";
+
 b.className="section-btn"+(section===num?" selected":"");
+
 b.textContent="Section "+num;
+
 b.onclick=()=>selectSection(num);
+
 root.appendChild(b);
+
 });
+
 $("sectionDescription").textContent=
 `Level ${level} · Sections ${sectionNumbers()[0]}–${sectionNumbers().slice(-1)[0]}`;
+
 }
 
 function changeLevel(n,button){
+
 level=n;
+
 section=null;
 selectedSeats=[];
 currentSeats=[];
+
 $("seatArea").hidden=true;
+
 document.querySelectorAll(".level").forEach(b=>b.classList.remove("active"));
+
 button.classList.add("active");
+
 drawMap();
 renderSections();
 update();
+
 }
 
 function chooseCategory(name,cost,button){
+
 category=name;
 price=cost;
+
 document.querySelectorAll(".price-card").forEach(b=>b.classList.remove("active"));
+
 button.classList.add("active");
+
 update();
+
 }
 
 function selectSection(num){
+
 section=num;
+
 selectedSeats=[];
 currentSeats=[];
+
 $("seatArea").hidden=true;
+
 drawMap();
 renderSections();
 update();
+
 }
 
 function changeQuantity(delta){
+
 quantity=Math.max(1,Math.min(20,quantity+delta));
-if(selectedSeats.length>quantity)selectedSeats=selectedSeats.slice(0,quantity);
+
+if(selectedSeats.length>quantity)
+selectedSeats=selectedSeats.slice(0,quantity);
+
 renderSeatGrid();
 update();
+
 }
 
 async function findSeats(){
+
 if(!section){
 alert("Please select a numbered section first.");
 return;
 }
 
 const button=$("findSeatsButton");
+
 const requestToken=++seatRequestToken;
+
 button.disabled=true;
+
 button.textContent="LOADING AVAILABLE SEATS...";
+
 $("seatArea").hidden=false;
+
 $("seatMessage").textContent="Checking live seat availability...";
+
 $("seatGrid").innerHTML="";
 
 try{
-const response=await fetch(`${BACKEND_URL}/api/seats/${level}/${section}`);
+
+const response=await fetch(
+`${BACKEND_URL}/api/seats/${level}/${section}`
+);
+
 const result=await response.json();
 
 if(requestToken!==seatRequestToken)return;
+
 if(!response.ok||!result.status||!Array.isArray(result.seats)){
 throw new Error(result.message||"Could not load seats.");
 }
 
 currentSeats=result.seats;
+
 selectedSeats=[];
+
 renderSeatGrid();
+
 $("seatMessage").textContent=
 `Level ${level}, Section ${section}: choose ${quantity} seat(s).`;
+
 $("seatArea").scrollIntoView({behavior:"smooth",block:"start"});
+
 }catch(error){
+
 $("seatMessage").textContent=error.message;
+
 }finally{
+
 button.disabled=false;
+
 button.textContent="🔎 FIND MY SEATS";
+
 }
+
 }
 
 function renderSeatGrid(){
+
 const grid=$("seatGrid");
+
 grid.innerHTML="";
 
 currentSeats.forEach(seat=>{
+
 const b=document.createElement("button");
+
 b.type="button";
+
 b.className="seat";
+
 b.textContent=seat.number;
 
 const unavailable=seat.status!=="available";
+
 if(unavailable){
+
 b.classList.add("unavailable");
+
 b.disabled=true;
+
 b.title=seat.status;
+
 }else if(selectedSeats.includes(seat.number)){
+
 b.classList.add("selected");
+
 }
 
 b.onclick=()=>{
+
 if(unavailable)return;
 
 if(selectedSeats.includes(seat.number)){
+
 selectedSeats=selectedSeats.filter(n=>n!==seat.number);
+
 }else{
+
 if(selectedSeats.length>=quantity){
+
 alert("You have already selected the required number of seats.");
+
 return;
+
 }
+
 selectedSeats.push(seat.number);
+
 }
 
 renderSeatGrid();
+
 update();
+
 };
+
 grid.appendChild(b);
+
 });
+
 }
 
 function continueToCheckout(){
+
 if(!section){
+
 alert("Please choose a stadium section.");
+
 return;
+
 }
+
 if(selectedSeats.length!==quantity){
+
 alert(`Please select exactly ${quantity} available seat(s).`);
+
 return;
+
 }
-$("selectedSeatsInput").value=selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+
+$("selectedSeatsInput").value=
+selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+
 $("booking").scrollIntoView({behavior:"smooth",block:"start"});
+
 }
 
 function update(){
+
 $("quantityDisplay").textContent=quantity;
+
 $("sumCategory").textContent=category;
+
 $("sumLevel").textContent="Level "+level;
+
 $("sumSection").textContent=section||"Please select a section";
+
 $("sumQuantity").textContent=quantity;
+
 $("sumSeats").textContent=selectedSeats.length;
+
 $("sumTotal").textContent=money(price*quantity);
+
 $("payTotal").textContent=money(price*quantity);
+
 $("categoryInput").value=category+" - "+money(price);
-$("selectedSeatsInput").value=selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+
+$("selectedSeatsInput").value=
+selectedSeats.slice().sort((a,b)=>a-b).join(", ");
+
 }
 
 function zoomMap(n){
+
 zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
+
 drawMap();
+
 }
 
 function resetMap(){
+
 zoom=1;
+
 drawMap();
+
 }
 
 $("bookingForm").addEventListener("submit",async e=>{
+
 e.preventDefault();
 
 if(!section||selectedSeats.length!==quantity){
+
 $("message").textContent="Please select your exact seats before payment.";
+
 $("stadium").scrollIntoView({behavior:"smooth"});
+
 return;
+
 }
 
 const name=$("name").value.trim();
+
 const phone=$("phone").value.trim();
+
 const email=$("email").value.trim();
+
 const method=document.querySelector('input[name="method"]:checked').value;
+
 const message=$("message");
+
 const button=$("payButton");
 
 button.disabled=true;
+
 button.textContent="CONNECTING TO PAYSTACK...";
+
 message.textContent="Preparing your seat reservation...";
 
 try{
+
 const response=await fetch(BACKEND_URL+"/api/payments/initialize",{
+
 method:"POST",
+
 headers:{"Content-Type":"application/json"},
+
 body:JSON.stringify({
+
 name,
 phone,
 email,
@@ -567,28 +1043,40 @@ ticket_type:category,
 stadium_level:level,
 section,
 selected_seats:selectedSeats.slice().sort((a,b)=>a-b)
+
 })
+
 });
 
 const result=await response.json();
 
 if(!response.ok||!result.status||!result.authorization_url){
+
 throw new Error(result.message||"Payment initialization failed.");
+
 }
 
 message.textContent="Reservation ready. Redirecting to secure payment...";
+
 window.location.href=result.authorization_url;
 
 }catch(err){
+
 message.textContent=err.message+" Please try again.";
+
 button.disabled=false;
+
 button.textContent="PAY WITH PAYSTACK";
+
 }
+
 });
 
 drawMap();
 renderSections();
 update();
+
 </script>
+
 </body>
 </html>
