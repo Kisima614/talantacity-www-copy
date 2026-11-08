@@ -30,7 +30,7 @@ const LEVEL_SECTIONS = {
   3: { first: 401, last: 435 }
 };
 
-// FIREBASE
+// FIREBASE INITIALIZATION
 const SERVICE_ACCOUNT_PATH =
   process.env.GOOGLE_APPLICATION_CREDENTIALS ||
   "/etc/secrets/serviceAccountKey.json";
@@ -50,7 +50,7 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const Timestamp = admin.firestore.Timestamp;
 
-// CORS - UPDATED FOR TALANTA DOMAINS
+// CORS
 const ALLOWED_ORIGINS = [
   "https://talantacity.com",
   "https://www.talantacity.com",
@@ -72,7 +72,7 @@ app.use(express.json({
   }
 }));
 
-// PAYSTACK AUTHENTICATION
+// PAYMENT AUTHENTICATION
 function paymentHeaders() {
   if (!process.env.PAYSTACK_SECRET_KEY) {
     throw new Error("Paystack secret key is missing.");
@@ -84,7 +84,6 @@ function paymentHeaders() {
   };
 }
 
-// PAYHERO AUTHENTICATION
 function payheroHeaders() {
   let token = process.env.PAYHERO_BASIC_AUTH_TOKEN;
 
@@ -298,11 +297,9 @@ async function createReservation(details) {
     }
 
     const seatRefs = seats.map(seat => seatDocument(seat.id));
-    const seatSnaps = [];
-
-    for (const ref of seatRefs) {
-      seatSnaps.push(await tx.get(ref));
-    }
+    const seatSnaps = await Promise.all(
+      seatRefs.map(ref => tx.get(ref))
+    );
 
     for (const snap of seatSnaps) {
       if (snap.exists) {
@@ -371,7 +368,7 @@ async function createReservation(details) {
   });
 }
 
-// FINALIZE A VERIFIED PAYMENT
+// FINALIZE VERIFIED PAYMENT
 async function finalizeBooking(reference, paymentReference) {
   const bookingRef = db.collection("bookings").doc(reference);
 
@@ -400,11 +397,9 @@ async function finalizeBooking(reference, paymentReference) {
       seatDocument(seat.id)
     );
 
-    const seatSnaps = [];
-
-    for (const ref of seatRefs) {
-      seatSnaps.push(await tx.get(ref));
-    }
+    const seatSnaps = await Promise.all(
+      seatRefs.map(ref => tx.get(ref))
+    );
 
     for (const snap of seatSnaps) {
       if (
@@ -510,9 +505,7 @@ async function confirmMpesaPayment(reference) {
   const response = await axios.get(
     `${PAYHERO_URL}/api/v2/transaction-status`,
     {
-      params: {
-        reference: booking.payheroReference
-      },
+      params: { reference: booking.payheroReference },
       headers: payheroHeaders(),
       timeout: 20000
     }
@@ -539,7 +532,7 @@ async function confirmMpesaPayment(reference) {
   );
 }
 
-// HOME
+// HOME / HEALTH CHECK
 app.get("/", (req, res) => {
   res.json({
     service: "Talanta Sport City",
@@ -554,8 +547,10 @@ app.get("/", (req, res) => {
   });
 });
 
-// SEAT AVAILABILITY
+// OPTIMIZED SEAT AVAILABILITY
 app.get("/api/seats/:level/:section", async (req, res) => {
+  const startedAt = Date.now();
+
   try {
     const level = Number(req.params.level);
     const section = Number(req.params.section);
@@ -573,14 +568,28 @@ app.get("/api/seats/:level/:section", async (req, res) => {
       });
     }
 
-    await releaseExpiredReservations();
+    // Prevent browser or intermediary caching of live seat status
+    res.set("Cache-Control", "no-store");
 
-    const result = [];
+    // Build all 60 Firestore document references
+    const seatRefs = Array.from(
+      { length: SEATS_PER_SECTION },
+      (_, index) => {
+        const number = index + 1;
+        const id =
+          `L${level}-S${section}-N${String(number).padStart(2, "0")}`;
 
-    for (let number = 1; number <= SEATS_PER_SECTION; number++) {
-      const id = `L${level}-S${section}-N${String(number).padStart(2, "0")}`;
-      const snap = await seatDocument(id).get();
+        return seatDocument(id);
+      }
+    );
 
+    // Fetch all 60 seats concurrently in one Firestore getAll call
+    const snapshots = await db.getAll(...seatRefs);
+
+    const now = Date.now();
+
+    const seats = snapshots.map((snap, index) => {
+      const number = index + 1;
       let status = "available";
 
       if (snap.exists) {
@@ -591,28 +600,36 @@ app.get("/api/seats/:level/:section", async (req, res) => {
         } else if (
           data.status === "pending" &&
           data.expiresAt &&
-          data.expiresAt.toMillis() > Date.now()
+          data.expiresAt.toMillis() > now
         ) {
           status = "reserved";
         }
       }
 
-      result.push({ number, id, status });
-    }
+      return {
+        number,
+        id: seatRefs[index].id,
+        status
+      };
+    });
 
-    res.json({
+    console.log(
+      `Seat loading: L${level} S${section} | ${Date.now() - startedAt}ms`
+    );
+
+    return res.json({
       status: true,
       level,
       section,
-      seats: result
+      seats
     });
 
   } catch (error) {
-    console.error("Seat availability error:", error.message);
+    console.error("Seat availability error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       status: false,
-      message: "Unable to retrieve seat availability."
+      message: "Unable to retrieve seats. Please try again."
     });
   }
 });
@@ -624,8 +641,14 @@ app.get("/api/tickets/availability", async (req, res) => {
 
     const result = {};
 
-    for (const [name, type] of Object.entries(TICKET_TYPES)) {
-      const snap = await db.collection("inventory").doc(name).get();
+    const snapshots = await Promise.all(
+      Object.keys(TICKET_TYPES).map(name =>
+        db.collection("inventory").doc(name).get()
+      )
+    );
+
+    Object.entries(TICKET_TYPES).forEach(([name, type], index) => {
+      const snap = snapshots[index];
 
       const data = snap.exists
         ? snap.data()
@@ -641,7 +664,7 @@ app.get("/api/tickets/availability", async (req, res) => {
         ),
         price: type.price
       };
-    }
+    });
 
     res.json({ status: true, availability: result });
 
@@ -730,10 +753,7 @@ app.post("/api/payments/initialize", async (req, res) => {
       throw new Error("Paystack is not configured.");
     }
 
-    if (
-      isMobile &&
-      !process.env.PAYHERO_CHANNEL_ID
-    ) {
+    if (isMobile && !process.env.PAYHERO_CHANNEL_ID) {
       throw new Error("PayHero channel ID is missing.");
     }
 
@@ -1004,7 +1024,7 @@ app.get("/api/payments/verify", async (req, res) => {
   }
 });
 
-// CHECK PAYMENT STATUS FOR WEBSITE
+// CHECK PAYMENT STATUS
 app.get("/api/payments/status/:reference", async (req, res) => {
   try {
     const reference = String(req.params.reference || "");
@@ -1210,7 +1230,7 @@ app.post("/api/payments/webhook", async (req, res) => {
   }
 });
 
-// SERVER
+// SERVER START
 app.listen(PORT, () => {
   console.log(`Talanta Sport City running on port ${PORT}`);
 });
