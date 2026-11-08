@@ -1,3 +1,4 @@
+
 const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
@@ -9,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 const EVENT = "Bayern vs Ajax";
-const FRONTEND_URL = "https://www.talantacity.com/";
+const FRONTEND_URL = "https://www.talantasportcitytickets.com/";
 const PAYSTACK_URL = "https://api.paystack.co";
 const PAYHERO_URL = "https://backend.payhero.co.ke";
 
@@ -49,14 +50,18 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const Timestamp = admin.firestore.Timestamp;
 
-// CORS
+// CORS - UPDATED FOR TALANTA DOMAINS
+const ALLOWED_ORIGINS = [
+  "https://talantacity.com",
+  "https://www.talantacity.com",
+  "https://talantasportcitytickets.com",
+  "https://www.talantasportcitytickets.com",
+  "https://kisima614.github.io",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: [
-    "https://talantacity.com",
-    "https://www.talantacity.com",
-    "https://kisima614.github.io",
-    "http://localhost:3000"
-  ],
+  origin: ALLOWED_ORIGINS,
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
@@ -80,8 +85,6 @@ function paymentHeaders() {
 }
 
 // PAYHERO AUTHENTICATION
-// Supports the Basic Auth token from PayHero API Keys.
-// Also supports username/password if supplied separately.
 function payheroHeaders() {
   let token = process.env.PAYHERO_BASIC_AUTH_TOKEN;
 
@@ -1116,8 +1119,6 @@ app.post("/api/payments/payhero-callback", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    // Confirm with PayHero's own transaction-status API
-    // before marking the booking as paid.
     const confirmed = await confirmMpesaPayment(reference);
 
     if (confirmed.status !== "paid") {
