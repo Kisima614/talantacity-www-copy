@@ -76,6 +76,9 @@ h2{font-size:23px}
 .price-card strong{display:block;margin-top:7px;font-size:19px}
 .price-card small{color:#64748b}
 .price-card.active{border:2px solid #078343;background:#eaf8ef}
+.price-card.premium{border-color:#c99b32;background:#fffaf0}
+.price-card.premium.active{border:2px solid #b8860b;background:#fff1cc}
+.premium-note{color:#946200!important;font-weight:bold}
 
 .green-btn{background:#087d43;color:white;border:0;padding:16px;width:100%;font-weight:bold;font-size:17px;border-radius:6px;cursor:pointer}
 .green-btn:hover{background:#056735}
@@ -235,15 +238,30 @@ TALANTA
 
 <div class="price-list">
 <button type="button" class="price-card active" onclick="chooseCategory('Regular',2500,this)">
-<small>REGULAR</small><strong>KSh 2,500</strong><small>Standard admission</small>
+<small>REGULAR</small>
+<strong>KSh 2,500</strong>
+<small>Standard admission</small>
 </button>
+
 <button type="button" class="price-card" onclick="chooseCategory('VIP',5000,this)">
-<small>VIP</small><strong>KSh 5,000</strong><small>Premium seating</small>
+<small>VIP</small>
+<strong>KSh 5,000</strong>
+<small>Premium seating</small>
 </button>
+
 <button type="button" class="price-card" onclick="chooseCategory('VVIP',15000,this)">
-<small>VVIP</small><strong>KSh 15,000</strong><small>Exclusive seating</small>
+<small>VVIP</small>
+<strong>KSh 15,000</strong>
+<small>Exclusive seating</small>
+</button>
+
+<button type="button" class="price-card premium" onclick="chooseCategory('VVIP PREMIUM',75000,this)">
+<small>VVIP PREMIUM</small>
+<strong>KSh 75,000</strong>
+<small class="premium-note">LIMITED TO 100 TICKETS</small>
 </button>
 </div>
+<p class="muted premium-note">VVIP PREMIUM: KSh 75,000 per ticket. Only 100 tickets allocated.</p>
 </div>
 
 <div style="padding:15px 16px;border-top:1px solid #ddd">
@@ -537,6 +555,7 @@ function update(){
  $("payButton").textContent=method&&method.value==="card"?"PAY WITH PAYSTACK":"PAY WITH M-PESA";
 }
 
+/* Keep the displayed total and booking quantity in sync. */
 function zoomMap(n){
  zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
  drawMap();
