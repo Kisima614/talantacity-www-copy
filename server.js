@@ -21,7 +21,8 @@ const SEATS_PER_SECTION = 60;
 const TICKET_TYPES = {
   Regular: { price: 2500, capacity: 50000 },
   VIP: { price: 5000, capacity: 15000 },
-  VVIP: { price: 15000, capacity: 5000 }
+  VVIP: { price: 15000, capacity: 5000 },
+  "VVIP PREMIUM": { price: 75000, capacity: 100 }
 };
 
 const LEVEL_SECTIONS = {
@@ -72,7 +73,7 @@ app.use(express.json({
   }
 }));
 
-// PAYMENT AUTHENTICATION
+// PAYSTACK AUTHENTICATION
 function paymentHeaders() {
   if (!process.env.PAYSTACK_SECRET_KEY) {
     throw new Error("Paystack secret key is missing.");
@@ -84,6 +85,7 @@ function paymentHeaders() {
   };
 }
 
+// PAYHERO AUTHENTICATION
 function payheroHeaders() {
   let token = process.env.PAYHERO_BASIC_AUTH_TOKEN;
 
@@ -297,9 +299,11 @@ async function createReservation(details) {
     }
 
     const seatRefs = seats.map(seat => seatDocument(seat.id));
-    const seatSnaps = await Promise.all(
-      seatRefs.map(ref => tx.get(ref))
-    );
+    const seatSnaps = [];
+
+    for (const ref of seatRefs) {
+      seatSnaps.push(await tx.get(ref));
+    }
 
     for (const snap of seatSnaps) {
       if (snap.exists) {
@@ -397,9 +401,11 @@ async function finalizeBooking(reference, paymentReference) {
       seatDocument(seat.id)
     );
 
-    const seatSnaps = await Promise.all(
-      seatRefs.map(ref => tx.get(ref))
-    );
+    const seatSnaps = [];
+
+    for (const ref of seatRefs) {
+      seatSnaps.push(await tx.get(ref));
+    }
 
     for (const snap of seatSnaps) {
       if (
@@ -505,7 +511,9 @@ async function confirmMpesaPayment(reference) {
   const response = await axios.get(
     `${PAYHERO_URL}/api/v2/transaction-status`,
     {
-      params: { reference: booking.payheroReference },
+      params: {
+        reference: booking.payheroReference
+      },
       headers: payheroHeaders(),
       timeout: 20000
     }
@@ -532,7 +540,7 @@ async function confirmMpesaPayment(reference) {
   );
 }
 
-// HOME / HEALTH CHECK
+// HOME
 app.get("/", (req, res) => {
   res.json({
     service: "Talanta Sport City",
@@ -568,10 +576,8 @@ app.get("/api/seats/:level/:section", async (req, res) => {
       });
     }
 
-    // Prevent browser or intermediary caching of live seat status
     res.set("Cache-Control", "no-store");
 
-    // Build all 60 Firestore document references
     const seatRefs = Array.from(
       { length: SEATS_PER_SECTION },
       (_, index) => {
@@ -583,9 +589,7 @@ app.get("/api/seats/:level/:section", async (req, res) => {
       }
     );
 
-    // Fetch all 60 seats concurrently in one Firestore getAll call
     const snapshots = await db.getAll(...seatRefs);
-
     const now = Date.now();
 
     const seats = snapshots.map((snap, index) => {
