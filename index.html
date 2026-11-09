@@ -71,9 +71,36 @@ h2{font-size:23px}
 .ticket-control button{width:48px;height:43px;background:white;border:1px solid #cbd5e1;border-radius:7px;font-size:23px;cursor:pointer}
 .ticket-control strong{font-size:24px}
 
-.price-list{display:flex;gap:14px;overflow-x:auto;padding:4px 0 15px}
-.price-card{min-width:165px;border:1px solid #cbd5e1;border-radius:8px;padding:14px;background:white;text-align:left;cursor:pointer}
-.price-card strong{display:block;margin-top:7px;font-size:19px}
+/* TICKET CATEGORIES - FORCED 2 BY 2 GRID */
+.price-list{
+display:grid!important;
+grid-template-columns:repeat(2,minmax(0,1fr))!important;
+gap:14px!important;
+width:100%!important;
+padding:4px 0 15px;
+overflow:visible!important;
+overflow-x:visible!important;
+}
+
+.price-card{
+display:flex!important;
+width:100%!important;
+min-width:0!important;
+max-width:100%!important;
+min-height:155px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+padding:16px 10px;
+background:white;
+text-align:center;
+cursor:pointer;
+flex-direction:column!important;
+align-items:center!important;
+justify-content:center!important;
+gap:9px;
+}
+
+.price-card strong{display:block;font-size:19px}
 .price-card small{color:#64748b}
 .price-card.active{border:2px solid #078343;background:#eaf8ef}
 .price-card.premium{border-color:#c99b32;background:#fffaf0}
@@ -100,7 +127,7 @@ h2{font-size:23px}
 
 label{display:block;font-size:14px;font-weight:bold;margin:16px 0 7px}
 input{width:100%;padding:13px;border:1px solid #cbd1da;border-radius:5px;font-size:15px}
-.payment{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.payment{display:grid;grid-template-columns:1fr}
 .payment label{border:1px solid #ddd;padding:13px;border-radius:5px;display:flex;align-items:center;gap:9px}
 .payment input{width:auto}
 
@@ -132,20 +159,15 @@ nav a{font-size:13px;margin:5px}
 .section-grid{grid-template-columns:repeat(3,1fr)}
 .toolbar{gap:8px}
 .toolbar button{padding:11px 10px;font-size:12px}
-.price-card{min-width:145px}
-.payment{grid-template-columns:1fr}
 .buy-btn{padding:15px 28px}
+.price-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 </style>
 </head>
 
 <body>
-
 <header>
-<div class="logo">
-TALANTA
-<span>SPORTS CITY</span>
-</div>
+<div class="logo">TALANTA<span>SPORTS CITY</span></div>
 <nav>
 <a href="#home">Home</a>
 <a href="#event">Event</a>
@@ -173,7 +195,7 @@ TALANTA
 <h1>BAYERN <span>VS</span> AJAX</h1>
 <h2>Raila Odinga International Stadium</h2>
 <p>NAIROBI, KENYA</p>
-<p class="event-time">Tue 5 Jan 2027 · Starts at 8:00 PM EAT</p>
+<p class="event-time">Tue 5 Jan 2027 · Starts at 4:00 PM EAT</p>
 <a href="#stadium" class="buy-btn">Buy tickets</a>
 <p class="start-price">From <strong>KSh 2,500</strong> per seat · <a href="#stadium" style="color:white">All prices</a></p>
 </div>
@@ -181,7 +203,7 @@ TALANTA
 
 <div class="details" id="event">
 <div><strong>📅 DATE</strong><small>5 JANUARY 2027</small></div>
-<div><strong>⏰ KICK-OFF</strong><small>8:00 PM EAT</small></div>
+<div><strong>⏰ KICK-OFF</strong><small>4:00 PM EAT</small></div>
 <div><strong>📍 VENUE</strong><small>NAIROBI, KENYA</small></div>
 </div>
 </section>
@@ -222,7 +244,6 @@ TALANTA
 <g id="sections"></g>
 </svg>
 </div>
-
 <p class="muted" style="text-align:center;margin-top:10px">Tap a numbered section on the map or use the section buttons below.</p>
 </div>
 
@@ -298,7 +319,7 @@ TALANTA
 <section class="panel" id="booking">
 <div class="panel-inner">
 <h2>Complete your booking</h2>
-<p class="muted">Enter your details to continue to secure payment.</p>
+<p class="muted">Enter your details to continue to secure M-Pesa payment.</p>
 
 <form id="bookingForm">
 <label for="name">Full Name</label>
@@ -318,8 +339,10 @@ TALANTA
 
 <label>Payment method</label>
 <div class="payment">
-<label><input type="radio" name="method" value="mobile_money" checked> M-Pesa (PayHero)</label>
-<label><input type="radio" name="method" value="card"> Bank Card (Paystack)</label>
+<label>
+<input type="radio" name="method" value="mobile_money" checked>
+M-Pesa (PayHero)
+</label>
 </div>
 
 <div class="summary-row total">
@@ -550,12 +573,9 @@ function update(){
  $("payTotal").textContent=money(price*quantity);
  $("categoryInput").value=category+" - "+money(price);
  $("selectedSeatsInput").value=selectedSeats.slice().sort((a,b)=>a-b).join(", ");
-
- const method=document.querySelector('input[name="method"]:checked');
- $("payButton").textContent=method&&method.value==="card"?"PAY WITH PAYSTACK":"PAY WITH M-PESA";
+ $("payButton").textContent="PAY WITH M-PESA";
 }
 
-/* Keep the displayed total and booking quantity in sync. */
 function zoomMap(n){
  zoom=Math.max(.8,Math.min(1.4,zoom+n*.1));
  drawMap();
@@ -652,12 +672,11 @@ $("bookingForm").addEventListener("submit",async e=>{
  const name=$("name").value.trim();
  const phone=$("phone").value.trim();
  const email=$("email").value.trim();
- const method=document.querySelector('input[name="method"]:checked').value;
  const message=$("message");
  const button=$("payButton");
 
  button.disabled=true;
- button.textContent=method==="card"?"CONNECTING TO PAYSTACK...":"CONNECTING TO PAYHERO...";
+ button.textContent="CONNECTING TO PAYHERO...";
  message.className="pending-message";
  message.textContent="Preparing your seat reservation...";
 
@@ -670,7 +689,7 @@ $("bookingForm").addEventListener("submit",async e=>{
     phone,
     email,
     quantity,
-    payment_method:method,
+    payment_method:"mobile_money",
     ticket_type:category,
     stadium_level:level,
     section,
@@ -684,20 +703,6 @@ $("bookingForm").addEventListener("submit",async e=>{
    throw new Error(result.message||"Payment initialization failed.");
   }
 
-  /* PAYSTACK CARD PAYMENT */
-  if(method==="card"){
-   const paymentUrl=result.authorization_url||result.checkout_url||result.payment_url;
-
-   if(!paymentUrl){
-    throw new Error("Paystack did not return a payment link. Please contact support.");
-   }
-
-   message.textContent="Opening secure Paystack card payment...";
-   window.location.href=paymentUrl;
-   return;
-  }
-
-  /* PAYHERO M-PESA PAYMENT */
   if(result.provider!=="payhero"){
    throw new Error("The server did not confirm PayHero as the M-Pesa payment provider. Please contact support.");
   }
@@ -721,12 +726,8 @@ $("bookingForm").addEventListener("submit",async e=>{
   message.textContent=err.message+" If you have already received an M-Pesa prompt or paid, check your M-Pesa messages before retrying.";
   message.className="error-message";
   button.disabled=false;
-  button.textContent=method==="card"?"PAY WITH PAYSTACK":"PAY WITH M-PESA";
+  button.textContent="PAY WITH M-PESA";
  }
-});
-
-document.querySelectorAll('input[name="method"]').forEach(radio=>{
- radio.addEventListener("change",update);
 });
 
 drawMap();
